@@ -1,21 +1,20 @@
-FROM php:8.2-cli
+FROM php:8.2-apache
 
 # Install extensions
 RUN apt-get update && apt-get install -y \
-    git \
     unzip \
     zip \
     curl \
     nano \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
+    libpng-dev libonig-dev libxml2-dev zip unzip \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copy the application files
-COPY . /srv/app
+RUN a2enmod rewrite headers
 
-WORKDIR /srv/app
+# Copy the application files
+COPY ./src /srv/src
+
+WORKDIR /srv/src

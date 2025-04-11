@@ -3,17 +3,19 @@ version: '3.8'
 services:
   server:
     build:
-      context: ./server
-      dockerfile: Dockerfile
+      context: ./
+      dockerfile: server/Dockerfile
     container_name: toeic_server
     volumes:
-      - .:/srv/app
+      - ./src:/srv/src
+      - ./server/etc/apache2/sites-enabled/default.conf:/etc/apache2/sites-enabled/000-default.conf
     ports:
       - "80:80"
     depends_on:
       - db
     networks:
       - app-network
+    
 
   db:
     image: mysql:8
