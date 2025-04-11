@@ -1,0 +1,10 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Folder structure of the project
+
+- server/: Contains Docker configuration files used to run the application environment.
+- src/: Contains the main Laravel application.  
+  To run any Laravel-related bash commands, (eg: composer require, php artisan). Make sure to `cd ./src` first.
