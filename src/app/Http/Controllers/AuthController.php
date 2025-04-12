@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\ApiResponse;
 use App\Services\Auth\AuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -45,26 +46,16 @@ class AuthController extends Controller
     /**
      * Login user
      *
-     * @param Request $request
-     * @return JsonResponse
      */
-    public function login(Request $request): JsonResponse
+    public function login(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $validated = $request->validate([
             'email' => 'required|string|email',
             'password' => 'required|string|min:8',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        try {
-            $result = $this->authService->login($request->all());
-            return response()->json($result);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 401);
-        }
+        $result = $this->authService->login($validated);
+        return $result;
     }
 
     /**

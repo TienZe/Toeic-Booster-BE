@@ -2,7 +2,7 @@
 
 During your interaction with the user, if you find anything reusable in this project (e.g. version of a library, model name), especially about a fix to a mistake you made or a correction you received, you should take note in the `Lessons` section in the `.cursorrules` file so you will not make the same mistake again. 
 
-You should also use `.md` file in the folder `.tasks` as a Scratchpad to organize your thoughts. Especially when you receive a new task, you should first create a new `task-name.md` file review the content of the Scratchpad, clear old different task if necessary, explain the task, and plan the steps you need to take to complete the task inside that `task-name.md` file. Note that file name of a task should be clear about the new task you receive from user. The format of task name should be `{task-order}-{task-brief-description}.md`.
+You should also use `.md` file in the folder `tasks` as a Scratchpad to organize your thoughts. Especially when you receive a new task, you should first create a new `task-name.md` file review the content of the Scratchpad, clear old different task if necessary, explain the task, and plan the steps you need to take to complete the task inside that `task-name.md` file. Note that file name of a task should be clear about the new task you receive from user. The format of task name should be `{task-order}-{task-brief-description}.md`.
 
 Each task file should include the following 5 sections:
 
@@ -38,6 +38,8 @@ This helps improve performance in future tasks and summarize these lesson into a
 --
 
 When creating a task file, please clarify the requirements with the user to ensure the Scratchpad is comprehensive and meets the user's expectations.
+
+After you've created the task file, please confirm with the user before proceeding.
 
 Also update the progress of the task in the that `task-name.md` file in Scratchpad section when you finish a subtask.
 Especially when you finished a milestone, it will help to improve your depth of task accomplishment to use the Scratchpad to reflect and plan.
