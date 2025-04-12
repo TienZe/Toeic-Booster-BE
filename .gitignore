@@ -1,2 +1,5 @@
 venv
+xdebug-artifacts
+.vscode
+.tasks
 

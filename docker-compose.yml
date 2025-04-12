@@ -9,6 +9,8 @@ services:
     volumes:
       - ./src:/srv/src
       - ./server/etc/apache2/sites-enabled/default.conf:/etc/apache2/sites-enabled/000-default.conf
+      - ./server/php/conf.d/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+      - ./xdebug-artifacts:/tmp/xdebug-artifacts
     ports:
       - "80:80"
     depends_on:
