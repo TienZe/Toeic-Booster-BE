@@ -7,7 +7,7 @@ You should also use `.md` file in the folder `tasks` as a Scratchpad to organize
 Each task file should include the following 5 sections:
 
 1. Task Overview  
-A brief summary of the task’s purpose and scope.
+A brief summary of the task's purpose and scope.
 
 2. Task Status  
 Status can be one of the following: `"Planning"`, `"In Progress"`, or `"Done"`.
@@ -44,6 +44,8 @@ After you've created the task file, please confirm with the user before proceedi
 Also update the progress of the task in the that `task-name.md` file in Scratchpad section when you finish a subtask.
 Especially when you finished a milestone, it will help to improve your depth of task accomplishment to use the Scratchpad to reflect and plan.
 The goal is to help you maintain a big picture as well as the progress of the task. Always refer to the Scratchpad when you plan the next step.
+
+When you finished a milestone, then pause to request user feedback before proceeding.
 
 When the user asks about a specific task, they may also specify the task order. In that case, you should refer to both the task requirements and the progress that has already been made in the corresponding `.md` file.
 
@@ -92,5 +94,12 @@ If needed, you can further use the `web_scraper.py` file to scrape the web page 
 - Due to Cursor's limit, when you use `git` and `gh` and need to submit a multiline commit message, first write the message in a file, and then use `git commit -F <filename>` or similar command to commit. And then remove the file. Include "[Cursor] " in the commit message and PR title.
 - No need to inject models through constructor as they rarely change
 - No need to create interfaces for repositories and services
-  
+- Create form request for request validation.
+- Favor creating template files using `php artisan` command lines if feasible.
+
 ## Cursor learned
+
+- Always create form requests using Laravel commands for consistency and to follow Laravel standards
+- Keep validation rules and messages in form request classes for better organization and reusability
+- Use $request->validated() instead of $request->all() for better security
+- Organize form requests by controller namespace for better code organization

@@ -2,15 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\ApiResponse;
+use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\RegisterRequest;
 use App\Services\Auth\AuthService;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
-    protected AuthService $authService;
+    private AuthService $authService;
 
     public function __construct(AuthService $authService)
     {
@@ -19,75 +17,46 @@ class AuthController extends Controller
 
     /**
      * Register a new user
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
-    public function register(Request $request): JsonResponse
+    public function register(RegisterRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed:passwordConfirmation',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        try {
-            $result = $this->authService->register($request->all());
-            return response()->json($result, 201);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 400);
-        }
+        $result = $this->authService->register($request->validated());
+        return $result;
     }
 
     /**
      * Login user
-     *
      */
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
-        $validated = $request->validate([
-            'email' => 'required|string|email',
-            'password' => 'required|string|min:8',
-        ]);
-
-        $result = $this->authService->login($validated);
+        $result = $this->authService->login($request->validated());
         return $result;
     }
 
     /**
      * Logout user
-     *
-     * @return JsonResponse
      */
-    public function logout(): JsonResponse
+    public function logout()
     {
         $this->authService->logout();
-        return response()->json(['message' => 'Successfully logged out']);
+        return true;
     }
 
     /**
      * Refresh token
-     *
-     * @return JsonResponse
      */
-    public function refresh(): JsonResponse
+    public function refresh()
     {
         $result = $this->authService->refreshToken();
-        return response()->json($result);
+        return $result;
     }
 
     /**
      * Get authenticated user
-     *
-     * @return JsonResponse
      */
-    public function me(): JsonResponse
+    public function me()
     {
         $user = $this->authService->getAuthenticatedUser();
-        return response()->json($user);
+        return $user;
     }
 }
