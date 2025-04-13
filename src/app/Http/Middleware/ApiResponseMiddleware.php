@@ -25,10 +25,6 @@ class ApiResponseMiddleware
 
         if (isset($response->exception)) {
             // Construct response for exception
-            if (env('APP_DEBUG') === true) {
-                return $response; // Show the raw html error page
-            }
-
             $exception = $response->exception;
             $message = $exception->getMessage();
             $errorCode = $exception->getCode();
