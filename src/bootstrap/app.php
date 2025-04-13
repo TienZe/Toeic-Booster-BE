@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(\App\Http\Middleware\CorsMiddleware::class);
         $middleware->append(\App\Http\Middleware\CamelCaseToSnakeCaseMiddleware::class);
         $middleware->append(\App\Http\Middleware\ApiResponseMiddleware::class);
+        $middleware->append(\App\Http\Middleware\CamelCaseResponseMiddleware::class);
 
         // Define aliases for middlewares
         $middleware->alias([
