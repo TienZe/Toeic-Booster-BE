@@ -51,6 +51,8 @@ When the user asks about a specific task, they may also specify the task order. 
 
 After completing a task, you should write a note in the `Lessons` section of the `.cursorrules` file. This helps you avoid repeating the same mistake in the future and supports continuous learning from each task.
 
+Refer to historical tasks for context only. Old and done task files must remain unchanged.
+
 # Tools
 
 Note all the tools are in python3. So in the case you need to do batch processing, you can always consult the python files and write your own script.

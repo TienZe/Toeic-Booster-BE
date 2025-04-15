@@ -23,7 +23,7 @@ class AuthService
      *
      * @throws \Exception
      */
-    public function register(array $data): array
+    public function register(array $data)
     {
         $user = $this->authRepository->createUser($data);
         return $user;

@@ -28,8 +28,14 @@ class AuthRepository
     public function createUser(array $data): User
     {
         try {
-            $data['password'] = Hash::make($data['password']);
-            return User::create($data);
+            $password = Hash::make($data['password']);
+
+            $user = new User($data);
+            $user->password = $password;
+            $user->save();
+            $user->refresh();
+
+            return $user;
         } catch (\Exception $e) {
             throw new \Exception('Failed to create user: ' . $e->getMessage());
         }

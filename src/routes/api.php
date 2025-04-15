@@ -1,7 +1,8 @@
 <?php
 
-use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UserController;
 
 Route::get('/test', function () {
     return response()->json(['message' => 'API is working']);
@@ -17,4 +18,11 @@ Route::prefix('auth')->group(function () {
     });
 
     Route::post('refresh', [AuthController::class, 'refresh']);
+});
+
+Route::group([
+    'prefix' => 'user',
+    'middleware' => 'jwt.auth'
+], function () {
+    Route::put('profile', [UserController::class, 'updateProfile']);
 });
