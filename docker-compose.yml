@@ -12,7 +12,7 @@ services:
       - ./server/php/conf.d/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
       - ./xdebug-artifacts:/tmp/xdebug-artifacts
     ports:
-      - "80:80"
+      - "3001:80"
     depends_on:
       - db
     networks:

@@ -21,21 +21,12 @@ class AuthService
     /**
      * Register a new user
      *
-     * @param array $data
-     * @return array
      * @throws \Exception
      */
     public function register(array $data): array
     {
         $user = $this->authRepository->createUser($data);
-        $token = JWTAuth::fromUser($user);
-
-        return [
-            'user' => $user,
-            'token' => $token,
-            'token_type' => 'bearer',
-            'expires_in' => config('jwt.ttl') * 60
-        ];
+        return $user;
     }
 
     /**
