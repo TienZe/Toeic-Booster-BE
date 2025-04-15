@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\User;
 
+use App\Rules\Base64Image;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateProfileRequest extends FormRequest
@@ -17,6 +18,7 @@ class UpdateProfileRequest extends FormRequest
             'name' => ['sometimes', 'required', 'string', 'max:100'],
             'test_date' => ['sometimes', 'required', 'date'],
             'target_score' => ['sometimes', 'required', 'integer', 'min:0', 'max:990'],
+            'avatar' => ['sometimes', 'required', new Base64Image],
         ];
     }
 }
