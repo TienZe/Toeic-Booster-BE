@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Services\Auth;
+namespace App\Services;
 
 use App\Models\User;
-use App\Repositories\Auth\AuthRepository;
+use App\Repositories\AuthRepository;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;

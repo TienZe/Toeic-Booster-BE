@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Services\User;
+namespace App\Services;
 
 use App\Models\User;
-use App\Repositories\User\UserRepository;
-use App\Services\Auth\AuthService;
+use App\Repositories\UserRepository;
+use App\Services\AuthService;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class UserService

@@ -3,8 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\User\UpdateProfileRequest;
-use App\Services\User\UserService;
-use Illuminate\Http\JsonResponse;
+use App\Services\UserService;
 
 class UserController extends Controller
 {
