@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CollectionController;
+use App\Http\Controllers\LessonController;
 
 Route::get('/test', function () {
     return response()->json(['message' => 'API is working']);
@@ -28,7 +29,6 @@ Route::group([
     Route::put('profile', [UserController::class, 'updateProfile']);
 });
 
-// Collection routes
 Route::group([
     'prefix' => 'collections',
     // 'middleware' => 'jwt.auth'
@@ -38,4 +38,20 @@ Route::group([
     Route::get('/{id}', [CollectionController::class, 'show']);
     Route::put('/{id}', [CollectionController::class, 'update']);
     Route::delete('/{id}', [CollectionController::class, 'destroy']);
+
+    Route::group([
+        'prefix' => '{collection}/lessons',
+    ], function () {
+        Route::get('/', [LessonController::class, 'index']);
+        Route::post('/', [LessonController::class, 'store']);
+    });
+});
+
+Route::group([
+    'prefix' => 'lessons',
+    // 'middleware' => 'jwt.auth'
+], function () {
+    Route::get('/{id}', [LessonController::class, 'show']);
+    Route::put('/{id}', [LessonController::class, 'update']);
+    Route::delete('/{id}', [LessonController::class, 'destroy']);
 });
