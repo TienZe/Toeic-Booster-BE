@@ -13,6 +13,8 @@ class User extends Authenticatable implements JWTSubject
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
+    const AVATAR_FOLDER = 'users/avatars';
+
     /**
      * The attributes that are mass assignable.
      *

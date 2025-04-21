@@ -105,3 +105,4 @@ If needed, you can further use the `web_scraper.py` file to scrape the web page 
 - Keep validation rules and messages in form request classes for better organization and reusability
 - Use $request->validated() instead of $request->all() for better security
 - Organize form requests by controller namespace for better code organization
+- No need to wrap controller action with try catch because the app already has the global exception handler

@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\CollectionController;
 
 Route::get('/test', function () {
     return response()->json(['message' => 'API is working']);
@@ -25,4 +26,16 @@ Route::group([
     'middleware' => 'jwt.auth'
 ], function () {
     Route::put('profile', [UserController::class, 'updateProfile']);
+});
+
+// Collection routes
+Route::group([
+    'prefix' => 'collections',
+    // 'middleware' => 'jwt.auth'
+], function () {
+    Route::get('/', [CollectionController::class, 'index']);
+    Route::post('/', [CollectionController::class, 'store']);
+    Route::get('/{id}', [CollectionController::class, 'show']);
+    Route::put('/{id}', [CollectionController::class, 'update']);
+    Route::delete('/{id}', [CollectionController::class, 'destroy']);
 });

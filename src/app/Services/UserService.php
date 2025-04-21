@@ -27,8 +27,7 @@ class UserService
 
         if (!empty($data['avatar'])) {
             $avatar = Cloudinary::uploadApi()->upload($data['avatar'], [
-                "folder" => "users/avatars",
-                "display_name" => "user-avatar-" . $user->id,
+                "folder" => User::AVATAR_FOLDER,
             ]);
 
             $data['avatar'] = $avatar['secure_url'];
