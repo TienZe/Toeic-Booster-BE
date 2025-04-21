@@ -107,3 +107,5 @@ If needed, you can further use the `web_scraper.py` file to scrape the web page 
 - Don't implement authorize() in form request
 - Organize form requests by controller namespace for better code organization
 - No need to wrap controller action with try catch because the app already has the global exception handler
+- When handling file uploads with Cloudinary, store both the URL and public_id to facilitate updates and deletions
+- Use PHP 8.1 enums for fields with a fixed set of possible values

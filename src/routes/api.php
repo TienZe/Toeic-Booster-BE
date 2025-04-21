@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CollectionController;
 use App\Http\Controllers\LessonController;
+use App\Http\Controllers\VocabularyController;
 
 Route::get('/test', function () {
     return response()->json(['message' => 'API is working']);
@@ -54,4 +55,11 @@ Route::group([
     Route::get('/{id}', [LessonController::class, 'show']);
     Route::put('/{id}', [LessonController::class, 'update']);
     Route::delete('/{id}', [LessonController::class, 'destroy']);
+});
+
+Route::group([
+    'prefix' => 'vocabularies',
+    // 'middleware' => 'jwt.auth'
+], function () {
+    Route::post('/', [VocabularyController::class, 'store']);
 });
