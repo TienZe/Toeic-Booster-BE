@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Vocabulary\UpdateVocabularyRequest;
 use Illuminate\Http\Request;
 use App\Http\Requests\Vocabulary\StoreVocabularyRequest;
 use App\Services\VocabularyService;
@@ -23,5 +24,10 @@ class VocabularyController extends Controller
         $vocabulary = $this->vocabularyService->createVocabulary($request->validated());
 
         return $vocabulary;
+    }
+
+    public function update(UpdateVocabularyRequest $request)
+    {
+        
     }
 }

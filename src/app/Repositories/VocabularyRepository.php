@@ -16,4 +16,13 @@ class VocabularyRepository
     {
         return Vocabulary::create($data);
     }
+
+    public function update($idOrInstance, array $data): ?Vocabulary
+    {
+        $vocabulary = $idOrInstance instanceof Vocabulary ? $idOrInstance : Vocabulary::findOrFail($idOrInstance);
+
+        $vocabulary->update($data);
+
+        return $vocabulary;
+    }
 }
