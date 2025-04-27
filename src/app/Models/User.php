@@ -37,6 +37,15 @@ class User extends Authenticatable implements JWTSubject
     ];
 
     /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array<int, string>
+     */
+    protected $appends = [
+        'role_names',
+    ];
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -55,6 +64,14 @@ class User extends Authenticatable implements JWTSubject
     public function roles(): BelongsToMany
     {
         return $this->belongsToMany(Role::class);
+    }
+
+    /**
+     * Get a simple array of role names for this user.
+     */
+    public function getRoleNamesAttribute(): array
+    {
+        return $this->roles()->pluck('name')->toArray();
     }
 
     /**

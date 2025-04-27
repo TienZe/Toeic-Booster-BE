@@ -26,8 +26,13 @@ class VocabularyController extends Controller
         return $vocabulary;
     }
 
-    public function update(UpdateVocabularyRequest $request)
+    /**
+     * Update the specified vocabulary in storage.
+     */
+    public function update(UpdateVocabularyRequest $request, int $id)
     {
-        
+        $vocabulary = $this->vocabularyService->updateVocabulary($id, $request->validated());
+
+        return $vocabulary;
     }
 }
