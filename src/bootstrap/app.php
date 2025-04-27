@@ -21,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Define aliases for middlewares
         $middleware->alias([
             'jwt.auth' => \App\Http\Middleware\JwtMiddleware::class,
+            'admin' => \App\Http\Middleware\RequireAdminPermission::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
