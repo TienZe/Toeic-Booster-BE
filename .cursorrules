@@ -53,41 +53,6 @@ After completing a task, you should write a note in the `Lessons` section of the
 
 Refer to historical tasks for context only. Old and done task files must remain unchanged.
 
-# Tools
-
-Note all the tools are in python3. So in the case you need to do batch processing, you can always consult the python files and write your own script.
-
-## Screenshot Verification
-
-The screenshot verification workflow allows you to capture screenshots of web pages and verify their appearance using LLMs. The following tools are available:
-
-1. Screenshot Capture:
-```bash
-venv/bin/python3 tools/screenshot_utils.py URL [--output OUTPUT] [--width WIDTH] [--height HEIGHT]
-```
-
-## Web browser
-
-You could use the `tools/web_scraper.py` file to scrape the web.
-```bash
-venv/bin/python3 ./tools/web_scraper.py --max-concurrent 3 URL1 URL2 URL3
-```
-This will output the content of the web pages.
-
-## Search engine
-
-You could use the `tools/search_engine.py` file to search the web.
-```bash
-venv/bin/python3 ./tools/search_engine.py "your search keywords"
-```
-This will output the search results in the following format:
-```
-URL: https://example.com
-Title: This is the title of the search result
-Snippet: This is a snippet of the search result
-```
-If needed, you can further use the `web_scraper.py` file to scrape the web page content.
-
 # Lessons
 
 ## User Specified Lessons
