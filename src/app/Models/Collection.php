@@ -23,4 +23,9 @@ class Collection extends Model
     {
         return $this->hasMany(Lesson::class);
     }
+
+    public function collectionTags()
+    {
+        return $this->belongsToMany(CollectionTag::class);
+    }
 }

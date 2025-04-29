@@ -16,5 +16,8 @@ class DatabaseSeeder extends Seeder
 
         // Seeds admin user
         $this->call(AdminUserSeeder::class);
+
+        // Seeds collection tags
+        $this->call(CollectionTagSeeder::class);
     }
 }
