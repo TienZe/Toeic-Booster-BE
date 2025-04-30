@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CollectionTagController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
@@ -62,4 +63,10 @@ Route::group([
     // 'middleware' => 'jwt.auth'
 ], function () {
     Route::post('/', [VocabularyController::class, 'store']);
+});
+
+Route::group([
+    'prefix' => 'collection-tags',
+], function () {
+    Route::get('/', [CollectionTagController::class, 'index']);
 });
