@@ -9,6 +9,7 @@ class CollectionTag extends Model
 {
     protected $guarded = [];
     public $timestamps = false;
+    protected $hidden = ['pivot'];
 
     const GRADE_5 = 1;
     const GRADE_6 = 2;

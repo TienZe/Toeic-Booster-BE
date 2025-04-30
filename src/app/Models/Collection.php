@@ -13,6 +13,8 @@ class Collection extends Model
      * @var array<int, string>
      */
     protected $guarded = [];
+    protected $with = ['tags'];
+
 
     const THUMBNAIL_FOLDER = 'collection_thumbnails';
 
@@ -24,7 +26,7 @@ class Collection extends Model
         return $this->hasMany(Lesson::class);
     }
 
-    public function collectionTags()
+    public function tags()
     {
         return $this->belongsToMany(CollectionTag::class);
     }

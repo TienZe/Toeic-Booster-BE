@@ -15,12 +15,14 @@ class StoreCollectionRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'description' => 'sometimes|nullable|string',
             'book_purchase_link' => 'sometimes|nullable|string|url|max:255',
             'thumbnail' => [
                 'sometimes',
                 new Base64Image
             ],
+            'tags' => 'required|array',
+            'tags.*' => 'exists:collection_tags,id',
         ];
     }
 
@@ -36,6 +38,8 @@ class StoreCollectionRequest extends FormRequest
             'name.max' => 'The collection name cannot exceed 255 characters.',
             'book_purchase_link.url' => 'The book purchase link must be a valid URL.',
             'thumbnail.base64image' => 'The thumbnail must be a valid image.',
+            'tags.required' => 'Please select at least one tag for the collection.',
+            'tags.*.exists' => 'The selected tags are invalid.',
         ];
     }
 }

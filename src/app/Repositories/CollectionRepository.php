@@ -25,7 +25,14 @@ class CollectionRepository
      */
     public function create(array $data): Collection
     {
-        return Collection::create($data);
+        $tags = $data['tags'];
+        unset($data['tags']);
+
+        $collection = Collection::create($data);
+
+        $collection->tags()->attach($tags);
+
+        return $collection;
     }
 
     /**
