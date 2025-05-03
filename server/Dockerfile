@@ -6,6 +6,7 @@ RUN apt-get update && apt-get install -y \
     zip \
     curl \
     nano \
+    iputils-ping \
     libpng-dev libonig-dev libxml2-dev zip unzip \
     apache2-utils \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd

@@ -23,7 +23,7 @@ services:
   db:
     image: mysql:8
     container_name: mysql_db
-    restart: unless-stopped
+    # restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: root
       # MYSQL_DATABASE: laravel

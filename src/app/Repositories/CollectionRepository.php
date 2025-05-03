@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Entities\PaginatedList;
 use App\Models\Collection;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 
@@ -10,11 +11,25 @@ class CollectionRepository
     /**
      * Get all collections
      *
-     * @return EloquentCollection
+     * @return PaginatedList
      */
-    public function getAll(): EloquentCollection
+    public function get(array $options): PaginatedList
     {
-        return Collection::all();
+        $query = Collection::query();
+
+        if (isset($options['search'])) {
+            // Search by collection name
+            $query->where('name', 'like', '%' . $options['search'] . '%');
+        }
+
+        if (isset($options['categories'])) {
+            // Filter by categories
+            $query->whereHas('tags', function ($query) use ($options) {
+                $query->whereIn('collection_tags.id', $options['categories']);
+            });
+        }
+
+        return PaginatedList::createFromQueryBuilder($query, $options["page"], $options["limit"]);
     }
 
     /**

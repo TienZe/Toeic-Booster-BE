@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Collection\GetListOfCollectionRequest;
 use App\Http\Requests\Collection\StoreCollectionRequest;
 use App\Http\Requests\Collection\UpdateCollectionRequest;
 use App\Services\CollectionService;
@@ -18,9 +19,9 @@ class CollectionController extends Controller
     /**
      * Display a listing of the collections.
      */
-    public function index()
+    public function index(GetListOfCollectionRequest $request)
     {
-        $collections = $this->collectionService->getAllCollections();
+        $collections = $this->collectionService->getCollections($request->validated());
 
         return $collections;
     }

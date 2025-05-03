@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Entities\PaginatedList;
 use App\Models\Collection;
 use App\Repositories\CollectionRepository;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
@@ -26,11 +27,11 @@ final class CollectionService
     /**
      * Get all collections
      *
-     * @return EloquentCollection
+     * @return PaginatedList
      */
-    public function getAllCollections(): EloquentCollection
+    public function getCollections(array $options): PaginatedList
     {
-        return $this->collectionRepository->getAll();
+        return $this->collectionRepository->get($options);
     }
 
     /**
