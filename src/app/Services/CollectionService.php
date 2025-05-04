@@ -79,7 +79,12 @@ final class CollectionService
             }
         }
 
-        return $this->collectionRepository->update($collection, $data);
+        $updatedCollection = $this->collectionRepository->update($collection, $data);
+
+        // Refresh the collection and all its relationships
+        $updatedCollection->refresh();
+
+        return $updatedCollection;
     }
 
     /**

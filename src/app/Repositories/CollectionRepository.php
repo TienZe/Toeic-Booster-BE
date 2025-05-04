@@ -60,6 +60,12 @@ class CollectionRepository
     {
         $collection = $idOrInstance instanceof Collection ? $idOrInstance : Collection::findOrFail($idOrInstance);
 
+        if (isset($data['tags'])) {
+            $collection->tags()->sync($data['tags']);
+
+            unset($data['tags']);
+        }
+
         $collection->update($data);
 
         return $collection;

@@ -22,6 +22,8 @@ class UpdateCollectionRequest extends FormRequest
                 'sometimes',
                 new Base64Image
             ],
+            'tags' => 'sometimes|array',
+            'tags.*' => 'exists:collection_tags,id',
         ];
     }
 
@@ -36,6 +38,7 @@ class UpdateCollectionRequest extends FormRequest
             'name.required' => 'The collection name is required.',
             'name.max' => 'The collection name cannot exceed 255 characters.',
             'book_purchase_link.url' => 'The book purchase link must be a valid URL.',
+            'tags.*.exists' => 'The selected tags are invalid.',
         ];
     }
 }
