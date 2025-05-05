@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Lesson extends Model
 {
+    const THUMBNAIL_FOLDER = 'lesson_thumbnails';
+
     /**
      * The attributes that are not mass assignable.
      *

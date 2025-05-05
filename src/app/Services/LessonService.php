@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Models\Lesson;
 use App\Repositories\LessonRepository;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Database\Eloquent\Collection;
 
 class LessonService
@@ -46,6 +47,14 @@ class LessonService
      */
     public function createLesson(array $data): Lesson
     {
+        if (!empty($data['thumbnail'])) {
+            $thumbnail = Cloudinary::uploadApi()->upload($data['thumbnail'], [
+                "folder" => Lesson::THUMBNAIL_FOLDER,
+            ]);
+
+            $data['thumbnail'] = $thumbnail['secure_url'];
+            $data['thumbnail_public_id'] = $thumbnail['public_id'];
+        }
         return $this->lessonRepository->create($data);
     }
 
