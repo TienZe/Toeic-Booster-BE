@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Lesson;
 
+use App\Rules\Base64Image;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateLessonRequest extends FormRequest
@@ -16,6 +17,7 @@ class UpdateLessonRequest extends FormRequest
         return [
             'name' => 'sometimes|required|string|max:255',
             'collection_id' => 'sometimes|required|exists:collections,id',
+            'thumbnail' => ['sometimes', new Base64Image]
         ];
     }
 

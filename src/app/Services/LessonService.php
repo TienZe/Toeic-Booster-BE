@@ -67,6 +67,22 @@ class LessonService
      */
     public function updateLesson(int|string $id, array $data): ?Lesson
     {
+        if (!empty($data['thumbnail'])) {
+            // Upload new thumbnail
+            $newThumbnail = Cloudinary::uploadApi()->upload($data['thumbnail'], [
+                "folder" => Lesson::THUMBNAIL_FOLDER,
+            ]);
+
+            // Delete old thumbnail
+            $lesson = $this->getLessonById($id);
+            if ($lesson->thumbnail_public_id) {
+                Cloudinary::uploadApi()->destroy($lesson->thumbnail_public_id);
+            }
+
+            $data['thumbnail'] = $newThumbnail['secure_url'];
+            $data['thumbnail_public_id'] = $newThumbnail['public_id'];
+        }
+
         return $this->lessonRepository->update($id, $data);
     }
 
