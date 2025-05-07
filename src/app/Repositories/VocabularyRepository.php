@@ -2,13 +2,27 @@
 
 namespace App\Repositories;
 
+use App\Entities\PaginatedList;
 use App\Models\Vocabulary;
+use Illuminate\Database\Eloquent\Collection;
 
 class VocabularyRepository
 {
     public function find(int $id): Vocabulary
     {
         return Vocabulary::findOrFail($id);
+    }
+
+    public function get(array $options): PaginatedList
+    {
+        $query = Vocabulary::query();
+
+        if (isset($options['search'])) {
+            $searchKey = $options['search'];
+            $query->where('word', 'like', '%' . $searchKey . '%');
+        }
+
+        return PaginatedList::createFromQueryBuilder($query, $options["page"] ?? 1, $options["limit"] ?? 10);
     }
 
     /**

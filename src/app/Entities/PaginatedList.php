@@ -28,7 +28,13 @@ class PaginatedList extends Entity
         $this->previousPage = max($currentPage - 1, 1);
     }
 
-
+    /**
+     * Summary of createFromQueryBuilder
+     * @param mixed $queryBuilder
+     * @param mixed $pageIndex one-based page index
+     * @param mixed $pageSize
+     * @return PaginatedList
+     */
     public static function createFromQueryBuilder($queryBuilder, $pageIndex, $pageSize)
     {
         $total = $queryBuilder->count();

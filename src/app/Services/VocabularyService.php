@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Entities\PaginatedList;
 use App\Models\Vocabulary;
 use App\Repositories\VocabularyRepository;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
@@ -20,6 +21,11 @@ class VocabularyService
     public function getVocabularyById(int $id): Vocabulary
     {
         return $this->vocabularyRepository->find($id);
+    }
+
+    public function getVocabularies(array $options): PaginatedList
+    {
+        return $this->vocabularyRepository->get($options);
     }
 
     /**
@@ -115,5 +121,24 @@ class VocabularyService
         }
 
         return $this->vocabularyRepository->update($id, $data);
+    }
+
+    public function deleteVocabulary(int $id): bool
+    {
+        $vocabulary = $this->vocabularyRepository->find($id);
+
+        if ($vocabulary->thumbnail_public_id) {
+            Cloudinary::uploadApi()->destroy($vocabulary->thumbnail_public_id);
+        }
+
+        if ($vocabulary->pronunciation_audio_public_id) {
+            Cloudinary::uploadApi()->destroy($vocabulary->pronunciation_audio_public_id);
+        }
+
+        if ($vocabulary->example_audio_public_id) {
+            Cloudinary::uploadApi()->destroy($vocabulary->example_audio_public_id);
+        }
+
+        return $vocabulary->delete();
     }
 }

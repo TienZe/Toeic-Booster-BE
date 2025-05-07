@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Vocabulary\GetListOfWordRequest;
 use App\Http\Requests\Vocabulary\UpdateVocabularyRequest;
 use Illuminate\Http\Request;
 use App\Http\Requests\Vocabulary\StoreVocabularyRequest;
@@ -14,6 +15,13 @@ class VocabularyController extends Controller
     public function __construct(VocabularyService $vocabularyService)
     {
         $this->vocabularyService = $vocabularyService;
+    }
+
+    public function index(GetListOfWordRequest $request)
+    {
+        $vocabularies = $this->vocabularyService->getVocabularies($request->validated());
+
+        return $vocabularies;
     }
 
     public function show(int $id)
@@ -41,5 +49,12 @@ class VocabularyController extends Controller
         $vocabulary = $this->vocabularyService->updateVocabulary($id, $request->validated());
 
         return $vocabulary;
+    }
+
+    public function destroy(int $id)
+    {
+        $deleted = $this->vocabularyService->deleteVocabulary($id);
+
+        return [ "deleted" => $deleted ];
     }
 }

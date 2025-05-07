@@ -62,8 +62,11 @@ Route::group([
     'prefix' => 'vocabularies',
     // 'middleware' => 'jwt.auth'
 ], function () {
+    Route::get('/', [VocabularyController::class, 'index']);
     Route::post('/', [VocabularyController::class, 'store']);
     Route::get('/{id}', [VocabularyController::class, 'show']);
+    Route::put('/{id}', [VocabularyController::class, 'update']);
+    Route::delete('/{id}', [VocabularyController::class, 'destroy']);
 });
 
 Route::group([
