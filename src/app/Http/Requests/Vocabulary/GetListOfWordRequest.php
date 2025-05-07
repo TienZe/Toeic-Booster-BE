@@ -14,7 +14,7 @@ class GetListOfWordRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'page' => 'required|integer|min:1',
+            'page' => 'required|integer|min:0',
             'limit' => 'sometimes|integer|min:1',
             'search' => 'sometimes|nullable|string|max:255',
         ];

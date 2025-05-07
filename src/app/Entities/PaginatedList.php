@@ -31,14 +31,14 @@ class PaginatedList extends Entity
     /**
      * Summary of createFromQueryBuilder
      * @param mixed $queryBuilder
-     * @param mixed $pageIndex one-based page index
+     * @param mixed $pageIndex zero-based page index
      * @param mixed $pageSize
      * @return PaginatedList
      */
     public static function createFromQueryBuilder($queryBuilder, $pageIndex, $pageSize)
     {
         $total = $queryBuilder->count();
-        $items = $queryBuilder->offset(($pageIndex - 1) * $pageSize)->limit($pageSize)->get();
+        $items = $queryBuilder->offset($pageIndex * $pageSize)->limit($pageSize)->get();
 
         return new PaginatedList($items, $total, $pageSize, $pageIndex);
     }

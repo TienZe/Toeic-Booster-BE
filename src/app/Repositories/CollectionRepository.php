@@ -29,7 +29,7 @@ class CollectionRepository
             });
         }
 
-        return PaginatedList::createFromQueryBuilder($query, $options["page"] ?? 1, $options["limit"] ?? 10);
+        return PaginatedList::createFromQueryBuilder($query, $options["page"] ?? 0, $options["limit"] ?? 10);
     }
 
     /**
