@@ -94,6 +94,13 @@ class LessonService
      */
     public function deleteLesson(int|string $id): int
     {
+        $lesson = $this->getLessonById($id);
+
+        // Delete thumbnail from Cloudinary
+        if ($lesson->thumbnail_public_id) {
+            Cloudinary::uploadApi()->destroy($lesson->thumbnail_public_id);
+        }
+
         return $this->lessonRepository->delete($id);
     }
 }

@@ -16,6 +16,13 @@ class VocabularyController extends Controller
         $this->vocabularyService = $vocabularyService;
     }
 
+    public function show(int $id)
+    {
+        $vocabulary = $this->vocabularyService->getVocabularyById($id);
+
+        return $vocabulary;
+    }
+
     /**
      * Store a newly created vocabulary in storage.
      */

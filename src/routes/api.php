@@ -63,6 +63,7 @@ Route::group([
     // 'middleware' => 'jwt.auth'
 ], function () {
     Route::post('/', [VocabularyController::class, 'store']);
+    Route::get('/{id}', [VocabularyController::class, 'show']);
 });
 
 Route::group([

@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Vocabulary;
 
 use App\Enums\PartOfSpeech;
+use App\Rules\Base64Image;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -17,7 +18,7 @@ class StoreVocabularyRequest extends FormRequest
     {
         return [
             'word' => 'required|string|max:255|unique:vocabularies',
-            'thumbnail' => 'nullable|string',
+            'thumbnail' => ['sometimes', 'string', new Base64Image],
             'part_of_speech' => [
                 'required',
                 'string',
@@ -26,7 +27,7 @@ class StoreVocabularyRequest extends FormRequest
             'meaning' => 'required|string',
             'definition' => 'nullable|string',
             'pronunciation' => 'required|string',
-            'pronunciation_audio' => 'required|string',
+            'pronunciation_audio' => 'sometimes|required|string',
             'example' => 'nullable|string',
             'example_meaning' => 'nullable|string',
             'example_audio' => 'nullable|string',

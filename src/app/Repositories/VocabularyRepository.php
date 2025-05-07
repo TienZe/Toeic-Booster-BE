@@ -6,6 +6,11 @@ use App\Models\Vocabulary;
 
 class VocabularyRepository
 {
+    public function find(int $id): Vocabulary
+    {
+        return Vocabulary::findOrFail($id);
+    }
+
     /**
      * Create a new vocabulary
      *

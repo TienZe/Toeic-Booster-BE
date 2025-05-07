@@ -17,6 +17,11 @@ class VocabularyService
         $this->vocabularyRepository = $vocabularyRepository;
     }
 
+    public function getVocabularyById(int $id): Vocabulary
+    {
+        return $this->vocabularyRepository->find($id);
+    }
+
     /**
      * Create a new vocabulary
      *
