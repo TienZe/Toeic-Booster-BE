@@ -7,6 +7,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\CollectionController;
 use App\Http\Controllers\LessonController;
 use App\Http\Controllers\VocabularyController;
+use App\Http\Controllers\LessonVocabularyController;
 
 Route::get('/test', function () {
     return response()->json(['message' => 'API is working']);
@@ -56,6 +57,8 @@ Route::group([
     Route::get('/{id}', [LessonController::class, 'show']);
     Route::put('/{id}', [LessonController::class, 'update']);
     Route::delete('/{id}', [LessonController::class, 'destroy']);
+
+    Route::post('/{id}/words', [LessonVocabularyController::class, 'store']);
 });
 
 Route::group([
@@ -66,7 +69,7 @@ Route::group([
     Route::post('/', [VocabularyController::class, 'store']);
     Route::get('/{id}', [VocabularyController::class, 'show']);
     Route::put('/{id}', [VocabularyController::class, 'update']);
-    Route::delete('/{id}', [VocabularyController::class, 'destroy']);
+    Route::delete('/{lessonId}', [VocabularyController::class, 'destroy']);
 });
 
 Route::group([
