@@ -3,10 +3,19 @@
 namespace App\Services;
 
 use App\Models\LessonVocabulary;
+use App\Repositories\LessonVocabularyRepository;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Support\Facades\DB;
 
 class LessonVocabularyService
 {
+    protected $lessonVocabularyRepository;
+
+    public function __construct(LessonVocabularyRepository $lessonVocabularyRepository)
+    {
+        $this->lessonVocabularyRepository = $lessonVocabularyRepository;
+    }
+
     /**
      * Bulk store lesson vocabularies.
      */
@@ -16,6 +25,9 @@ class LessonVocabularyService
 
         DB::transaction(function () use ($lessonId, $data, &$created) {
             foreach ($data as $item) {
+                // Upload media files
+                // ...
+
                 $created[] = LessonVocabulary::create([
                     'lesson_id' => $lessonId,
                     ...$item
@@ -51,5 +63,29 @@ class LessonVocabularyService
         });
 
         return $lessonVocabularies;
+    }
+
+    public function deleteLessonVocabulary($lessonId, $vocabularyId)
+    {
+        $lessonVocabulary = $this->lessonVocabularyRepository->get($lessonId, $vocabularyId);
+
+        if (!$lessonVocabulary) {
+            throw new \Exception('Lesson vocabulary not found');
+        }
+
+        // Delete media files
+        if ($lessonVocabulary->thumbnail_public_id) {
+            Cloudinary::uploadApi()->destroy($lessonVocabulary->thumbnail_public_id);
+        }
+
+        if ($lessonVocabulary->pronunciation_audio_public_id) {
+            Cloudinary::uploadApi()->destroy($lessonVocabulary->pronunciation_audio_public_id);
+        }
+
+        if ($lessonVocabulary->example_audio_public_id) {
+            Cloudinary::uploadApi()->destroy($lessonVocabulary->example_audio_public_id);
+        }
+
+        return $lessonVocabulary->delete();
     }
 }

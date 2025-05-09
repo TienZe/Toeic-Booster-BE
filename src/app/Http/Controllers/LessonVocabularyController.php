@@ -35,4 +35,14 @@ class LessonVocabularyController extends Controller
 
         return $created;
     }
+
+    /**
+     * Detach a vocabulary from a lesson.
+     */
+    public function destroy($lessonId, $vocabularyId)
+    {
+        $deleted = $this->lessonVocabularyService->deleteLessonVocabulary($lessonId, $vocabularyId);
+
+        return [ "deleted" => $deleted ];
+    }
 }
