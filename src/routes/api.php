@@ -64,6 +64,7 @@ Route::group([
     ], function () {
         Route::get('/', [LessonVocabularyController::class, 'index']);
         Route::post('/', [LessonVocabularyController::class, 'store']);
+        Route::delete('/{vocabularyId}', [LessonVocabularyController::class, 'destroy']);
     });
 });
 

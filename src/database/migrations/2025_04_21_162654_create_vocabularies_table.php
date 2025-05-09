@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('vocabularies', function (Blueprint $table) {
             $table->id();
-            $table->string('word')->unique();
+            $table->string('word');
             $table->string('thumbnail')->nullable();
             $table->string('thumbnail_public_id')->nullable();
             $table->string('part_of_speech');

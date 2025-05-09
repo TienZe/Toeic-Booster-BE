@@ -19,7 +19,11 @@ class VocabularyRepository
 
         if (isset($options['search'])) {
             $searchKey = $options['search'];
-            $query->where('word', 'like', '%' . $searchKey . '%');
+            $query->where(function ($query) use ($searchKey) {
+                $query->where('word', 'like', '%' . $searchKey . '%')
+                    ->orWhere('meaning', 'like', '%' . $searchKey . '%')
+                    ->orWhere('id', 'like', '%' . $searchKey . '%');
+            });
         }
 
         return PaginatedList::createFromQueryBuilder($query, $options["page"] ?? 0, $options["limit"] ?? 10);

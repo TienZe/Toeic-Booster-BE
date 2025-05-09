@@ -13,6 +13,7 @@ enum PartOfSpeech: string
     case CONJUNCTION = 'conjunction';
     case INTERJECTION = 'interjection';
     case DETERMINER = 'determiner';
+    case PROPER = 'proper';
 
     /**
      * Get all enum values as array

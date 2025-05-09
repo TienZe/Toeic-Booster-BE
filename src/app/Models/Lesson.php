@@ -15,6 +15,7 @@ class Lesson extends Model
      * @var array<int, string>
      */
     protected $guarded = [];
+    protected $appends = [ 'num_of_words' ];
 
     /**
      * Get the collection that owns the lesson.
@@ -22,5 +23,15 @@ class Lesson extends Model
     public function collection(): BelongsTo
     {
         return $this->belongsTo(Collection::class);
+    }
+
+    public function lessonVocabularies()
+    {
+        return $this->hasMany(LessonVocabulary::class);
+    }
+
+    public function getNumOfWordsAttribute(): int
+    {
+        return $this->lessonVocabularies()->count();
     }
 }

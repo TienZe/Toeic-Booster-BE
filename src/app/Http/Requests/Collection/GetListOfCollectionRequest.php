@@ -18,6 +18,7 @@ class GetListOfCollectionRequest extends FormRequest
             'limit' => 'sometimes|integer|min:1',
             'search' => 'sometimes|nullable|string|max:255',
             'categories' => 'sometimes|array',
+            'with_stats' => 'sometimes|boolean',
         ];
     }
 }

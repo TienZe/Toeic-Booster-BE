@@ -29,6 +29,10 @@ class CollectionRepository
             });
         }
 
+        if (isset($options['with_stats']) && $options['with_stats']) {
+            $query->withCount('lessons');
+        }
+
         return PaginatedList::createFromQueryBuilder($query, $options["page"] ?? 0, $options["limit"] ?? 10);
     }
 

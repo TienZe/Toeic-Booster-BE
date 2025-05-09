@@ -13,8 +13,10 @@ return new class extends Migration
     {
         Schema::create('lesson_vocabularies', function (Blueprint $table) {
             $table->id();
-            $table->integer('lesson_id');
-            $table->integer('vocabulary_id');
+
+            $table->foreignId('lesson_id')->constrained('lessons')->onDelete('cascade');
+            $table->foreignId('vocabulary_id')->constrained('vocabularies')->onDelete('cascade');
+
             $table->string('thumbnail')->nullable();
             $table->string('thumbnail_public_id')->nullable();
 
