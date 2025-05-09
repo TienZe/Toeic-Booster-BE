@@ -15,6 +15,19 @@ class LessonVocabularyController extends Controller
         $this->lessonVocabularyService = $lessonVocabularyService;
     }
 
+    /**
+     * Get all vocabularies for a lesson.
+     */
+    public function index($lessonId)
+    {
+        $vocabularies = $this->lessonVocabularyService->getLessonVocabularies($lessonId);
+
+        return $vocabularies;
+    }
+
+    /**
+     * Attach vocabularies to a lesson.
+     */
     public function store(BulkStoreLessonVocabularyRequest $request, $lessonId)
     {
         $validated = $request->validated();

@@ -58,7 +58,13 @@ Route::group([
     Route::put('/{id}', [LessonController::class, 'update']);
     Route::delete('/{id}', [LessonController::class, 'destroy']);
 
-    Route::post('/{id}/words', [LessonVocabularyController::class, 'store']);
+
+    Route::group([
+        'prefix' => '{lessonId}/words',
+    ], function () {
+        Route::get('/', [LessonVocabularyController::class, 'index']);
+        Route::post('/', [LessonVocabularyController::class, 'store']);
+    });
 });
 
 Route::group([
@@ -69,7 +75,7 @@ Route::group([
     Route::post('/', [VocabularyController::class, 'store']);
     Route::get('/{id}', [VocabularyController::class, 'show']);
     Route::put('/{id}', [VocabularyController::class, 'update']);
-    Route::delete('/{lessonId}', [VocabularyController::class, 'destroy']);
+    Route::delete('/{id}', [VocabularyController::class, 'destroy']);
 });
 
 Route::group([
