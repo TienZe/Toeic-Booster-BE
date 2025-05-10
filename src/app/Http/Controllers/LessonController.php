@@ -6,14 +6,18 @@ use App\Http\Requests\Lesson\StoreLessonRequest;
 use App\Http\Requests\Lesson\UpdateLessonRequest;
 use App\Models\Collection;
 use App\Services\LessonService;
+use App\Services\LessonVocabularyService;
+use Illuminate\Http\Request;
 
 class LessonController extends Controller
 {
     private LessonService $lessonService;
+    private LessonVocabularyService $lessonVocabularyService;
 
-    public function __construct(LessonService $lessonService)
+    public function __construct(LessonService $lessonService, LessonVocabularyService $lessonVocabularyService)
     {
         $this->lessonService = $lessonService;
+        $this->lessonVocabularyService = $lessonVocabularyService;
     }
 
     /**
@@ -40,9 +44,13 @@ class LessonController extends Controller
     /**
      * Display the specified lesson.
      */
-    public function show(string $id)
+    public function show(Request $request, string $id)
     {
         $lesson = $this->lessonService->getLessonById($id);
+
+        if (isset($request->with_words)) {
+            $lesson->words = $this->lessonVocabularyService->getLessonVocabularies($lesson->id);
+        }
 
         return $lesson;
     }
