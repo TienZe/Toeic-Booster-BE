@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CollectionTagController;
+use App\Http\Controllers\LessonLearningController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
@@ -65,6 +66,13 @@ Route::group([
         Route::get('/', [LessonVocabularyController::class, 'index']);
         Route::post('/', [LessonVocabularyController::class, 'store']);
         Route::delete('/{vocabularyId}', [LessonVocabularyController::class, 'destroy']);
+    });
+
+    Route::group([
+        'prefix' => '{lessonId}/lesson-learnings',
+        'middleware' => 'jwt.auth'
+    ], function () {
+        Route::post('/', [LessonLearningController::class, 'save']);
     });
 });
 
