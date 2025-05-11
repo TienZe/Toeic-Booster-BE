@@ -50,4 +50,18 @@ class LessonLearningService
     {
         return $this->lessonLearningRepository->get($userId, $lessonId);
     }
+
+    public function getUserLessonVocabularyFilteringResult($userId, $lessonId)
+    {
+        $lessonLearnings = $this->getLessonLearnings($userId, $lessonId);
+
+        $knownVocabularyIds = $lessonLearnings->where('already_known', true)->count();
+        $totalVocabularyIds = $lessonLearnings->count();
+
+        return [
+            'known_count' => $knownVocabularyIds,
+            'unknown_count' => $totalVocabularyIds - $knownVocabularyIds,
+            'total_count' => $totalVocabularyIds,
+        ];
+    }
 }

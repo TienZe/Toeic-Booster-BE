@@ -74,6 +74,13 @@ Route::group([
     ], function () {
         Route::post('/', [LessonLearningController::class, 'save']);
     });
+
+    Route::group([
+        'prefix' => '{lessonId}',
+        'middleware' => 'jwt.auth'
+    ], function () {
+        Route::get('/filtering-result', [LessonLearningController::class, 'getUserLessonVocabularyFilteringResult']);
+    });
 });
 
 Route::group([
