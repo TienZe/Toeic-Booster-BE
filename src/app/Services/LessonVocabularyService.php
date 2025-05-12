@@ -43,7 +43,8 @@ class LessonVocabularyService
     {
         $lessonVocabularies = LessonVocabulary::with('vocabulary')->where('lesson_id', $lessonId);
 
-        if (isset($options['with_user_lesson_learning']) && $options['with_user_lesson_learning']) {
+        $withUserLessonLearning = $options['with_user_lesson_learning'] ?? false;
+        if ($withUserLessonLearning) {
             $userId = Auth::user()->id;
 
             if (!$userId) {
@@ -59,28 +60,17 @@ class LessonVocabularyService
 
         $lessonVocabularies = $lessonVocabularies->get();
 
-        $lessonVocabularies = $lessonVocabularies->map(function ($lessonVocabulary) {
-            $defaultVocabulary = $lessonVocabulary->vocabulary;
+        $lessonVocabulariesDTO = $lessonVocabularies->map(function ($lessonVocabulary) use ($withUserLessonLearning) {
+            $lessonVocabularyDTO = $this->getLessonVocabularyDTO($lessonVocabulary);
 
-            return [
-                "id" => $lessonVocabulary->id,
-                "lesson_id" => $lessonVocabulary->lesson_id,
-                "vocabulary_id" => $lessonVocabulary->vocabulary_id,
-                "word" => $defaultVocabulary?->word,
-                "thumbnail" => $lessonVocabulary->thumbnail ?? $defaultVocabulary?->thumbnail,
-                "part_of_speech" => $lessonVocabulary->part_of_speech ?? $defaultVocabulary?->part_of_speech,
-                "meaning" => $lessonVocabulary->meaning ?? $defaultVocabulary?->meaning,
-                "definition" => $lessonVocabulary->definition ?? $defaultVocabulary?->definition,
-                "pronunciation" => $lessonVocabulary->pronunciation ?? $defaultVocabulary?->pronunciation,
-                "pronunciation_audio" => $lessonVocabulary->pronunciation_audio ?? $defaultVocabulary?->pronunciation_audio,
-                "example" => $lessonVocabulary->example ?? $defaultVocabulary?->example,
-                "example_meaning" => $lessonVocabulary->example_meaning ?? $defaultVocabulary?->example_meaning,
-                "example_audio" => $lessonVocabulary->example_audio ?? $defaultVocabulary?->example_audio,
-                "user_lesson_learning" => $lessonVocabulary->lessonLearnings->first(), // only has 1 related user lesson learning for each lesson vocabulary
-            ];
+            if ($withUserLessonLearning) {
+                $lessonVocabularyDTO['user_lesson_learning'] = $lessonVocabulary->lessonLearnings->first(); // only has 1 related user lesson learning for each lesson vocabulary
+            }
+
+            return $lessonVocabularyDTO;
         });
 
-        return $lessonVocabularies;
+        return $lessonVocabulariesDTO;
     }
 
     public function deleteLessonVocabulary($lessonId, $vocabularyId)
@@ -105,5 +95,31 @@ class LessonVocabularyService
         }
 
         return $lessonVocabulary->delete();
+    }
+
+    /**
+     * Map to the lesson vocabulary DTO that has the word information merged with the default vocabulary
+     * @param LessonVocabulary $lessonVocabulary
+     * @return array
+     */
+    public static function getLessonVocabularyDTO($lessonVocabulary)
+    {
+        $defaultVocabulary = $lessonVocabulary->vocabulary;
+
+        return [
+            "id" => $lessonVocabulary->id,
+            "lesson_id" => $lessonVocabulary->lesson_id,
+            "vocabulary_id" => $lessonVocabulary->vocabulary_id,
+            "word" => $defaultVocabulary?->word,
+            "thumbnail" => $lessonVocabulary->thumbnail ?? $defaultVocabulary?->thumbnail,
+            "part_of_speech" => $lessonVocabulary->part_of_speech ?? $defaultVocabulary?->part_of_speech,
+            "meaning" => $lessonVocabulary->meaning ?? $defaultVocabulary?->meaning,
+            "definition" => $lessonVocabulary->definition ?? $defaultVocabulary?->definition,
+            "pronunciation" => $lessonVocabulary->pronunciation ?? $defaultVocabulary?->pronunciation,
+            "pronunciation_audio" => $lessonVocabulary->pronunciation_audio ?? $defaultVocabulary?->pronunciation_audio,
+            "example" => $lessonVocabulary->example ?? $defaultVocabulary?->example,
+            "example_meaning" => $lessonVocabulary->example_meaning ?? $defaultVocabulary?->example_meaning,
+            "example_audio" => $lessonVocabulary->example_audio ?? $defaultVocabulary?->example_audio,
+        ];
     }
 }

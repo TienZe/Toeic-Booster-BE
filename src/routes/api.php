@@ -81,6 +81,7 @@ Route::group([
         'middleware' => 'jwt.auth'
     ], function () {
         Route::get('/filtering-result', [LessonLearningController::class, 'getUserLessonVocabularyFilteringResult']);
+        Route::get('/practice-statistics', [LessonExamController::class, 'getLessonPracticeStatistics']);
     });
 });
 

@@ -17,6 +17,8 @@ return new class extends Migration
             $table->foreignId('lesson_vocabulary_id')->constrained('lesson_vocabularies')->onDelete('cascade');
             $table->boolean('is_correct');
             $table->timestamps();
+
+            $table->unique(['lesson_exam_id', 'lesson_vocabulary_id']);
         });
     }
 

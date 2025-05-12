@@ -25,4 +25,12 @@ class LessonExamController extends Controller
 
         return $lessonExam;
     }
+
+    public function getLessonPracticeStatistics($lessonId)
+    {
+        $userId = Auth::user()->id;
+        $practiceStatistics = $this->lessonExamService->getLessonPracticeStatistics($lessonId, $userId);
+
+        return $practiceStatistics;
+    }
 }
