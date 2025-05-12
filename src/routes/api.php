@@ -63,7 +63,7 @@ Route::group([
     Route::group([
         'prefix' => '{lessonId}/words',
     ], function () {
-        Route::get('/', [LessonVocabularyController::class, 'index']);
+        Route::get('/', [LessonVocabularyController::class, 'getLessonVocabularies']);
         Route::post('/', [LessonVocabularyController::class, 'store']);
         Route::delete('/{vocabularyId}', [LessonVocabularyController::class, 'destroy']);
     });

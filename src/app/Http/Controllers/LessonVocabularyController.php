@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\LessonVocabulary\BulkStoreLessonVocabularyRequest;
+use App\Http\Requests\LessonVocabulary\GetLessonVocabulariesRequest;
 use App\Services\LessonVocabularyService;
 
 class LessonVocabularyController extends Controller
@@ -18,9 +19,11 @@ class LessonVocabularyController extends Controller
     /**
      * Get all vocabularies for a lesson.
      */
-    public function index($lessonId)
+    public function getLessonVocabularies(GetLessonVocabulariesRequest $request, $lessonId)
     {
-        $vocabularies = $this->lessonVocabularyService->getLessonVocabularies($lessonId);
+        $query = $request->validated();
+
+        $vocabularies = $this->lessonVocabularyService->getLessonVocabularies($lessonId, $query);
 
         return $vocabularies;
     }

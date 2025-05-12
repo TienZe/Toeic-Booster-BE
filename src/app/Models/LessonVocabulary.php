@@ -21,4 +21,9 @@ class LessonVocabulary extends Model
     {
         return $this->belongsTo(Vocabulary::class);
     }
+
+    public function lessonLearnings()
+    {
+        return $this->hasMany(LessonLearning::class);
+    }
 }

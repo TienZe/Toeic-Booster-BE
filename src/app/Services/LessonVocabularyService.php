@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\LessonVocabulary;
 use App\Repositories\LessonVocabularyRepository;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class LessonVocabularyService
@@ -38,9 +39,25 @@ class LessonVocabularyService
         return $created;
     }
 
-    public function getLessonVocabularies($lessonId)
+    public function getLessonVocabularies($lessonId, $options = [])
     {
-        $lessonVocabularies = LessonVocabulary::with('vocabulary')->where('lesson_id', $lessonId)->get();
+        $lessonVocabularies = LessonVocabulary::with('vocabulary')->where('lesson_id', $lessonId);
+
+        if (isset($options['with_user_lesson_learning']) && $options['with_user_lesson_learning']) {
+            $userId = Auth::user()->id;
+
+            if (!$userId) {
+                throw new \Exception('User not found');
+            }
+
+            // Load related user learning in the lesson
+            $lessonVocabularies = $lessonVocabularies->with('lessonLearnings', function ($query) use ($userId, $lessonId) {
+                $query->where('user_id', $userId);
+                $query->where('lesson_id', $lessonId);
+            });
+        }
+
+        $lessonVocabularies = $lessonVocabularies->get();
 
         $lessonVocabularies = $lessonVocabularies->map(function ($lessonVocabulary) {
             $defaultVocabulary = $lessonVocabulary->vocabulary;
@@ -59,6 +76,7 @@ class LessonVocabularyService
                 "example" => $lessonVocabulary->example ?? $defaultVocabulary?->example,
                 "example_meaning" => $lessonVocabulary->example_meaning ?? $defaultVocabulary?->example_meaning,
                 "example_audio" => $lessonVocabulary->example_audio ?? $defaultVocabulary?->example_audio,
+                "user_lesson_learning" => $lessonVocabulary->lessonLearnings->first(), // only has 1 related user lesson learning for each lesson vocabulary
             ];
         });
 
