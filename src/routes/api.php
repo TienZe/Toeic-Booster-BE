@@ -9,6 +9,7 @@ use App\Http\Controllers\CollectionController;
 use App\Http\Controllers\LessonController;
 use App\Http\Controllers\VocabularyController;
 use App\Http\Controllers\LessonVocabularyController;
+use App\Http\Controllers\LessonExamController;
 
 Route::get('/test', function () {
     return response()->json(['message' => 'API is working']);
@@ -98,4 +99,11 @@ Route::group([
     'prefix' => 'collection-tags',
 ], function () {
     Route::get('/', [CollectionTagController::class, 'index']);
+});
+
+Route::group([
+    'prefix' => 'lesson-exams',
+    'middleware' => 'jwt.auth'
+], function () {
+    Route::post('/', [LessonExamController::class, 'store']);
 });
