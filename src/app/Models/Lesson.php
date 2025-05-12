@@ -11,7 +11,7 @@ class Lesson extends Model
 
 
     const LEARNING_STEP_FILTERED = "filtered";
-    const LEARNING_STEP_TESTED = "tested";
+    const LEARNING_STEP_EXAMINED = "examined";
 
     /**
      * The attributes that are not mass assignable.
@@ -42,5 +42,10 @@ class Lesson extends Model
     public function lessonLearnings()
     {
         return $this->hasMany(LessonLearning::class);
+    }
+
+    public function lessonExams()
+    {
+        return $this->hasMany(LessonExam::class);
     }
 }

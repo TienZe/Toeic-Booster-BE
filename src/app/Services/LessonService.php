@@ -117,7 +117,13 @@ class LessonService
                 throw new \Exception('User not found');
             }
 
+            // Load filtering result of the logged in user
             $lessons->with(['lessonLearnings' => function ($query) use ($userId) {
+                $query->where('user_id', $userId);
+            }]);
+
+            // Load exam result of the logged in user
+            $lessons->with(['lessonExams' => function ($query) use ($userId) {
                 $query->where('user_id', $userId);
             }]);
         }
@@ -128,10 +134,12 @@ class LessonService
             foreach ($lessons as $lesson) {
                 // Set learning step for each lesson
                 $lesson->learning_step = $lesson->lessonLearnings->isNotEmpty() ? Lesson::LEARNING_STEP_FILTERED : null;
-                unset($lesson->lessonLearnings);
+                $lesson->learning_step = $lesson->lessonExams->isNotEmpty() ? Lesson::LEARNING_STEP_EXAMINED : $lesson->learning_step;
             }
         }
 
+        unset($lesson->lessonLearnings);
+        unset($lesson->lessonExams);
         return $lessons;
     }
 }
