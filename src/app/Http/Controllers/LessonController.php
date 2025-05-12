@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Lesson\GetLessonsRequest;
 use App\Http\Requests\Lesson\StoreLessonRequest;
 use App\Http\Requests\Lesson\UpdateLessonRequest;
 use App\Models\Collection;
@@ -23,9 +24,11 @@ class LessonController extends Controller
     /**
      * Display a listing of the lessons.
      */
-    public function index(Collection $collection)
+    public function index(Collection $collection, GetLessonsRequest $request)
     {
-        return $collection->lessons;
+        $lessons = $this->lessonService->getLessons($collection->id, $request->validated());
+
+        return $lessons;
     }
 
     /**

@@ -8,6 +8,7 @@ use App\Models\Lesson;
 use App\Repositories\LessonRepository;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Auth;
 
 class LessonService
 {
@@ -102,5 +103,35 @@ class LessonService
         }
 
         return $this->lessonRepository->delete($id);
+    }
+
+    public function getLessons($collectionId, $options = [])
+    {
+        $lessons = Lesson::where('collection_id', $collectionId);
+
+        $withUserLearningStep = isset($options['with_user_learning_step']) && $options['with_user_learning_step'];
+        if ($withUserLearningStep) {
+            $userId = Auth::user()->id;
+
+            if (!$userId) {
+                throw new \Exception('User not found');
+            }
+
+            $lessons->with(['lessonLearnings' => function ($query) use ($userId) {
+                $query->where('user_id', $userId);
+            }]);
+        }
+
+        $lessons = $lessons->get();
+
+        if ($withUserLearningStep) {
+            foreach ($lessons as $lesson) {
+                // Set learning step for each lesson
+                $lesson->learning_step = $lesson->lessonLearnings->isNotEmpty() ? Lesson::LEARNING_STEP_FILTERED : null;
+                unset($lesson->lessonLearnings);
+            }
+        }
+
+        return $lessons;
     }
 }

@@ -9,6 +9,10 @@ class Lesson extends Model
 {
     const THUMBNAIL_FOLDER = 'lesson_thumbnails';
 
+
+    const LEARNING_STEP_FILTERED = "filtered";
+    const LEARNING_STEP_TESTED = "tested";
+
     /**
      * The attributes that are not mass assignable.
      *
@@ -33,5 +37,10 @@ class Lesson extends Model
     public function getNumOfWordsAttribute(): int
     {
         return $this->lessonVocabularies()->count();
+    }
+
+    public function lessonLearnings()
+    {
+        return $this->hasMany(LessonLearning::class);
     }
 }
