@@ -109,8 +109,8 @@ class LessonService
     {
         $lessons = Lesson::where('collection_id', $collectionId);
 
-        $withUserLearningStep = isset($options['with_user_learning_step']) && $options['with_user_learning_step'];
-        if ($withUserLearningStep) {
+        $withUserLearningProgress = isset($options['with_user_learning_progress']) && $options['with_user_learning_progress'];
+        if ($withUserLearningProgress) {
             $userId = Auth::user()->id;
 
             if (!$userId) {
@@ -122,24 +122,44 @@ class LessonService
                 $query->where('user_id', $userId);
             }]);
 
-            // Load exam result of the logged in user
+            // Load latest exam result of the logged in user
             $lessons->with(['lessonExams' => function ($query) use ($userId) {
-                $query->where('user_id', $userId);
+                $query->where('user_id', $userId)
+                    ->orderBy('created_at', 'desc')
+                    ->limit(1);
             }]);
         }
 
         $lessons = $lessons->get();
 
-        if ($withUserLearningStep) {
+        if ($withUserLearningProgress) {
             foreach ($lessons as $lesson) {
                 // Set learning step for each lesson
                 $lesson->learning_step = $lesson->lessonLearnings->isNotEmpty() ? Lesson::LEARNING_STEP_FILTERED : null;
                 $lesson->learning_step = $lesson->lessonExams->isNotEmpty() ? Lesson::LEARNING_STEP_EXAMINED : $lesson->learning_step;
             }
+
+            foreach ($lessons as $lesson) {
+                $latestExam = $lesson->lessonExams->first();
+                $retainedWords = 0;
+
+                if ($latestExam) {
+                    $latestExam->loadCount(['answers as retained_words' => function ($query) {
+                        $query->where('is_correct', 1);
+                    }]);
+
+                    $retainedWords = $latestExam->retained_words;
+                }
+
+                $lesson->retained_words = $retainedWords;
+            }
         }
 
-        unset($lesson->lessonLearnings);
-        unset($lesson->lessonExams);
+        foreach ($lessons as $lesson) {
+            unset($lesson->lessonLearnings);
+            unset($lesson->lessonExams);
+        }
+
         return $lessons;
     }
 }

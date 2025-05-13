@@ -15,7 +15,7 @@ class GetLessonsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'with_user_learning_step' => 'sometimes|boolean',
+            'with_user_learning_progress' => 'sometimes|boolean',
         ];
     }
 }
