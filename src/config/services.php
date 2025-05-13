@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'azure_tts' => [
+        'key' => env('AZURE_TTS_KEY'),
+        'endpoint' => env('AZURE_TTS_ENDPOINT'),
+    ],
+
 ];

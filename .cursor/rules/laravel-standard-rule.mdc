@@ -24,7 +24,6 @@ alwaysApply: true
   PHP and Laravel Standards
   - Leverage PHP 8.1+ features when appropriate (e.g., typed properties, match expressions).
   - Adhere to PSR-12 coding standards for consistent code style.
-  - Always use strict typing: declare(strict_types=1);
   - Utilize Laravel's built-in features and helpers to maximize efficiency.
   - Follow Laravel's directory structure and file naming conventions.
   - Implement robust error handling and logging:
@@ -57,7 +56,6 @@ alwaysApply: true
       - Follow Laravel's conventions: singular for models, plural for controllers (e.g., User.php, UsersController.php).
       - Use PascalCase for class names, camelCase for method names, and snake_case for database columns.
     * Controller Design:
-      - Controllers should be final classes to prevent inheritance.
       - Make controllers read-only (i.e., no property mutations).
       - Avoid injecting dependencies directly into controllers. Instead, use method injection or service classes.
       - Put controller classes directly inside `src\app\Http\Controllers` folder.
@@ -66,7 +64,6 @@ alwaysApply: true
     * Services:
       - Create a Services folder within the app directory.
       - Organize services based on specific business logic domains.
-      - Service classes should be final and read-only.
       - Use services for complex business logic, keeping controllers thin.
       - Utilize the Repositories for simple interaction with specific model.
       - No need to create interfaces.

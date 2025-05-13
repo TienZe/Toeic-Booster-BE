@@ -11,6 +11,7 @@ use App\Http\Controllers\LessonController;
 use App\Http\Controllers\VocabularyController;
 use App\Http\Controllers\LessonVocabularyController;
 use App\Http\Controllers\LessonExamController;
+use App\Http\Controllers\TtsController;
 
 Route::get('/test', function () {
     return response()->json(['message' => 'API is working']);
@@ -125,3 +126,5 @@ Route::group([
 ], function () {
     Route::delete('/{lessonVocabularyId}', [LessonVocabularyController::class, 'delete']);
 });
+
+Route::post('/tts', TtsController::class);
