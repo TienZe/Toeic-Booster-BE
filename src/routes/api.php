@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CollectionTagController;
 use App\Http\Controllers\LessonLearningController;
+use App\Http\Controllers\WordFolderController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
@@ -107,4 +108,20 @@ Route::group([
     'middleware' => 'jwt.auth'
 ], function () {
     Route::post('/', [LessonExamController::class, 'store']);
+});
+
+Route::group([
+    'prefix' => 'word-folders',
+    'middleware' => 'jwt.auth'
+], function () {
+    Route::get('/', [WordFolderController::class, 'index']);
+    Route::post('/', [WordFolderController::class, 'store']);
+    Route::put('/{id}', [WordFolderController::class, 'update']);
+    Route::delete('/{id}', [WordFolderController::class, 'destroy']);
+});
+
+Route::group([
+    'prefix' => 'lesson-vocabularies',
+], function () {
+    Route::delete('/{lessonVocabularyId}', [LessonVocabularyController::class, 'delete']);
 });

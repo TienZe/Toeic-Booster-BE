@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\LessonVocabulary\BulkStoreLessonVocabularyRequest;
 use App\Http\Requests\LessonVocabulary\GetLessonVocabulariesRequest;
+use App\Models\LessonVocabulary;
 use App\Services\LessonVocabularyService;
 
 class LessonVocabularyController extends Controller
@@ -45,6 +46,14 @@ class LessonVocabularyController extends Controller
     public function destroy($lessonId, $vocabularyId)
     {
         $deleted = $this->lessonVocabularyService->deleteLessonVocabulary($lessonId, $vocabularyId);
+
+        return [ "deleted" => $deleted ];
+    }
+
+
+    public function delete($lessonVocabularyId)
+    {
+        $deleted = LessonVocabulary::destroy($lessonVocabularyId);
 
         return [ "deleted" => $deleted ];
     }
