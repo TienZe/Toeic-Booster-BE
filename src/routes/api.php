@@ -12,6 +12,7 @@ use App\Http\Controllers\VocabularyController;
 use App\Http\Controllers\LessonVocabularyController;
 use App\Http\Controllers\LessonExamController;
 use App\Http\Controllers\TtsController;
+use App\Http\Controllers\CollectionRatingController;
 
 Route::get('/test', function () {
     return response()->json(['message' => 'API is working']);
@@ -45,6 +46,14 @@ Route::group([
     Route::get('/{id}', [CollectionController::class, 'show']);
     Route::put('/{id}', [CollectionController::class, 'update']);
     Route::delete('/{id}', [CollectionController::class, 'destroy']);
+
+    Route::group([
+        'prefix' => '{collectionId}/ratings',
+        'middleware' => 'jwt.auth'
+    ], function () {
+        Route::post('/', [CollectionRatingController::class, 'store']);
+        Route::get('/', [CollectionRatingController::class, 'index']);
+    });
 
     Route::group([
         'prefix' => '{collection}/lessons',

@@ -30,4 +30,12 @@ class Collection extends Model
     {
         return $this->belongsToMany(CollectionTag::class);
     }
+
+    /**
+     * Get the ratings for the collection.
+     */
+    public function ratings(): HasMany
+    {
+        return $this->hasMany(CollectionRating::class);
+    }
 }
