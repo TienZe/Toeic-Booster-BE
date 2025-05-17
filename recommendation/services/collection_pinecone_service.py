@@ -40,25 +40,36 @@ class CollectionPineconeService:
             logger.error("Pinecone index not initialized")
             return []
             
-        if not vector and semantic_query:
+        if vector is None and semantic_query:
             # Just perform semantic search
             vector = self.get_embedding(semantic_query)
         
-        if not vector:
+        if vector is None:
             logger.error("No query or vector provided")
             return []
             
         try:
+            print("pinecone query with filter", filter)
             response = self.index.query(
                 vector=vector,
                 filter=filter,
                 top_k=limit,
-                include_metadata=True
+                # include_metadata=True
             )
             return response.get("matches", [])
         except Exception as e:
             logger.error(f"Pinecone query failed: {e}")
-            return [] 
+            return []
+    
+    def fetch_vectors(self, ids: List[str]) -> Dict[str, List[float]]:
+        """Fetch vectors from Pinecone by ids"""
+        if not self.index:
+            logger.error("Pinecone index not initialized")
+            return {}
+        
+        return { id: vector.values for id, vector in self.index.fetch(ids=ids).vectors.items() }
+            
+            
         
 # global init
 pinecone_service = CollectionPineconeService()

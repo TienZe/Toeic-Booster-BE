@@ -65,4 +65,12 @@ class CollectionController extends Controller
 
         return [ "deleted" => $deleted ];
     }
+
+
+    public function recommendCollections()
+    {
+        $collections = $this->collectionService->getRecommendedCollections();
+
+        return $collections;
+    }
 }

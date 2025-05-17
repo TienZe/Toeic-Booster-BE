@@ -41,11 +41,14 @@ Route::group([
     'prefix' => 'collections',
     // 'middleware' => 'jwt.auth'
 ], function () {
+    Route::get('/recommend', [CollectionController::class, 'recommendCollections'])->middleware('jwt.auth');
+
     Route::get('/', [CollectionController::class, 'index']);
     Route::post('/', [CollectionController::class, 'store']);
     Route::get('/{id}', [CollectionController::class, 'show']);
     Route::put('/{id}', [CollectionController::class, 'update']);
     Route::delete('/{id}', [CollectionController::class, 'destroy']);
+
 
     Route::group([
         'prefix' => '{collectionId}/ratings',
