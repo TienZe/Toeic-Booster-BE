@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Collection\GetListOfCollectionRequest;
+use App\Http\Requests\Collection\GetRecommendedCollectionRequest;
 use App\Http\Requests\Collection\StoreCollectionRequest;
 use App\Http\Requests\Collection\UpdateCollectionRequest;
 use App\Services\CollectionService;
@@ -68,9 +69,9 @@ class CollectionController extends Controller
     }
 
 
-    public function recommendCollections()
+    public function recommendCollections(GetRecommendedCollectionRequest $request)
     {
-        $collections = $this->collectionService->getRecommendedCollections();
+        $collections = $this->collectionService->getRecommendedCollections($request->validated());
 
         return $collections;
     }
