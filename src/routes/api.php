@@ -41,7 +41,11 @@ Route::group([
     'prefix' => 'collections',
     // 'middleware' => 'jwt.auth'
 ], function () {
-    Route::get('/recommend', [CollectionController::class, 'recommendCollections'])->middleware('jwt.auth');
+    Route::middleware('jwt.auth')->group(function () {
+        Route::get('/recommend', [CollectionController::class, 'recommendCollections']);
+        Route::get('/user-might-also-like', [CollectionController::class, 'getCollectionUserMightAlsoLike']);
+    });
+
     Route::get('/{id}/similar', [CollectionController::class, 'getSimilarCollections']);
 
     Route::get('/', [CollectionController::class, 'index']);

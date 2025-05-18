@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException
 from typing import List
 from models.schemas import RecommendationRequest, RecommendationResponse, RecommendationItem
 from services.collection_pinecone_service import pinecone_service
@@ -41,8 +41,8 @@ async def get_recommendations(
         collection_ids = list(collection_id_2_weight.keys())
         vectors_dict = pinecone_service.fetch_vectors(collection_ids)
         
-        print("collection_ids", collection_ids)
-        print("vectors_dict", vectors_dict)
+        # print("collection_ids", collection_ids)
+        # print("vectors_dict", vectors_dict)
         
         # Compute average weighted vector
         weighted_vector = np.zeros(len(vectors_dict[collection_ids[0]]))
@@ -54,8 +54,8 @@ async def get_recommendations(
         
         weighted_vector /= total_weight
         
-        print("weighted_vector", weighted_vector)
-        print("shape", weighted_vector.shape)
+        # print("weighted_vector", weighted_vector)
+        # print("shape", weighted_vector.shape)
         
         # Query similar
         results = pinecone_service.query_similar(

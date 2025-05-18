@@ -44,5 +44,5 @@ if __name__ == "__main__":
         "main:app",
         host=config.HOST,
         port=config.PORT,
-        reload=True
+        # reload=True
     ) 

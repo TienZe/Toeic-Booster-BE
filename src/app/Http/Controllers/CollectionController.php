@@ -6,6 +6,7 @@ use App\Http\Requests\Collection\GetListOfCollectionRequest;
 use App\Http\Requests\Collection\StoreCollectionRequest;
 use App\Http\Requests\Collection\UpdateCollectionRequest;
 use App\Services\CollectionService;
+use Illuminate\Http\Request;
 
 class CollectionController extends Controller
 {
@@ -77,5 +78,13 @@ class CollectionController extends Controller
     public function getSimilarCollections($id)
     {
         return $this->collectionService->getSimilarCollections($id);
+    }
+
+    public function getCollectionUserMightAlsoLike(Request $request)
+    {
+        $limit = $request->limit ?? 8;
+        $userId = auth()->id();
+
+        return $this->collectionService->getCollectionUserMightAlsoLike($userId, $limit);
     }
 }

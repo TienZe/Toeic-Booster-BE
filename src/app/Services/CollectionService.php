@@ -9,6 +9,7 @@ use App\Models\Collection;
 use App\Repositories\CollectionRepository;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 
 final class CollectionService
 {
@@ -120,11 +121,67 @@ final class CollectionService
     {
         $loggedInUserId = auth()->id();
 
+        $collectionWeightArr = $this->getUserCollectionWeightArray($loggedInUserId);
+        $preferredCollectionItems =$this->fetchPreferredCollectionIds($collectionWeightArr, $options);
+
+        $collectionIds = array_column($preferredCollectionItems, 'id');
+
+        $recommendedCollections = Collection::whereIn('id', $collectionIds)->get();
+        $sortedCollections = $this->sortRecommendedCollectionByScore($recommendedCollections, $preferredCollectionItems);
+
+        return $sortedCollections;
+    }
+
+    public function getCollectionUserMightAlsoLike($userId, $limit = 8)
+    {
+        $learnedCollections = $this->getUserLearnedCollections($userId);
+        $learnedCollectionIds = $learnedCollections->pluck('id')->toArray();
+        $numberOfLearned = count($learnedCollectionIds);
+
+        // 1. Get preferred collection, because the learned collections can be in the response, so just increase the limit
+        // and then apply the filter and limit the response again
+        $collectionWeightArr = $this->getUserCollectionWeightArray($userId);
+        $preferredCollectionItems = collect($this->fetchPreferredCollectionIds($collectionWeightArr, [
+            'limit' => $limit + $numberOfLearned
+        ]));
+
+        // 2. Remove the learned collections from the response
+        $preferredCollectionItems = $preferredCollectionItems->filter(function($item) use ($learnedCollectionIds) {
+            return !in_array($item['id'], $learnedCollectionIds);
+        });
+
+        // 3. Get the respective collections
+        $collections = Collection::whereIn('id', $preferredCollectionItems->pluck('id')->toArray())->get();
+
+        // 4. Sort by score DESC
+        $sortedCollections = $this->sortRecommendedCollectionByScore($collections, $preferredCollectionItems);
+
+        // 5. Limit the response again to ensure the response is not greater than the limit
+        return $sortedCollections->take($limit);
+    }
+
+    public function getUserLearnedCollections($userId)
+    {
+        $learnedCollections = Collection::whereHas('lessons.lessonLearnings', function($query) use ($userId) {
+            $query->where('user_id', $userId);
+        })->get();
+
+        return $learnedCollections;
+    }
+
+    /**
+     * Get the weight of collections rated by user and learned by user
+     *
+     * @param int $userId
+     * @return array{collection_id: int, weight: float}
+     */
+    private function getUserCollectionWeightArray($userId)
+    {
         $collectionWeights = [];
 
         // 1. Compute weight of collections rated by user
-        $ratedCollections =Collection::whereHas('ratings', function($query) use ($loggedInUserId) {
-                $query->where('user_id', $loggedInUserId);
+        $ratedCollections =Collection::whereHas('ratings', function($query) use ($userId) {
+                $query->where('user_id', $userId);
             })->with('ratings')
             ->get();
 
@@ -135,9 +192,7 @@ final class CollectionService
         }
 
         // 2. Compute the weight for collections learned by user (specifically, collections that have the user finish the filtering step)
-        $learnedCollections = Collection::whereHas('lessons.lessonLearnings', function($query) use ($loggedInUserId) {
-            $query->where('user_id', $loggedInUserId);
-        })->get();
+        $learnedCollections = $this->getUserLearnedCollections($userId);
 
         foreach ($learnedCollections as $collection) {
             if (!isset($collectionWeights[$collection->id])) {
@@ -153,16 +208,14 @@ final class CollectionService
             ];
         }
 
-        $preferredCollectionItems =$this->fetchPreferredCollectionIds($collectionWeightArr, $options);
-
-        $collectionIds = array_column($preferredCollectionItems, 'id');
-
-        $recommendedCollections = Collection::whereIn('id', $collectionIds)->get();
-        $sortedCollections = $this->sortRecommendedCollectionByScore($recommendedCollections, $preferredCollectionItems);
-
-        return $sortedCollections;
+        return $collectionWeightArr;
     }
 
+    /**
+     * Fetch the preferred collection items from based on user's collection weight array
+     *
+     * @return array{id: int, score: float}
+     */
     public function fetchPreferredCollectionIds($collectionWeights, $options)
     {
         $filterTitle = $options['filter_title'] ?? null;
@@ -206,6 +259,13 @@ final class CollectionService
         return $sortedCollections;
     }
 
+    /**
+     * Sort the collections by score DESC
+     *
+     * @param EloquentCollection $collections
+     * @param array{id: int, score: float} $recommendationItemResponse
+     * @return EloquentCollection
+     */
     private function sortRecommendedCollectionByScore($collections, $recommendationItemResponse)
     {
         $collectionId2Score = [];
