@@ -8,10 +8,11 @@ class GetRecommendedCollectionRequest extends FormRequest
 {
     public function rules(): array
     {
-        $data = parent::all();
         return [
             'filter_title' => 'sometimes|nullable|string',
             'filter_categories' => 'sometimes|array',
+            'page' => 'sometimes|integer|min:0',
+            'limit' => 'sometimes|integer',
         ];
     }
 }

@@ -57,12 +57,17 @@ async def get_recommendations(
         # print("weighted_vector", weighted_vector)
         # print("shape", weighted_vector.shape)
         
+        result_len = request.limit * (request.page + 1)
+        
         # Query similar
         results = pinecone_service.query_similar(
             vector=list(weighted_vector),
-            limit=request.limit,
+            limit=result_len,
             filter=filter_dict if filter_dict else None
         )
+        
+        # Paginate by getting the last slice
+        results = results[-request.limit:]
     
     # Transform results into response items
     items = []

@@ -18,8 +18,8 @@ class PaginatedList extends Entity
     {
         $this->items = $items;
         $this->total = $total;
-        $this->pageSize = $pageSize;
-        $this->currentPage = $currentPage;
+        $this->pageSize = (int)$pageSize;
+        $this->currentPage = (int)$currentPage;
         $this->totalPages = ceil($total / $pageSize);
 
         $this->hasNext = $currentPage < $this->totalPages;

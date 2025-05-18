@@ -121,6 +121,9 @@ final class CollectionService
     {
         $loggedInUserId = auth()->id();
 
+        $options['limit'] = $options['limit'] ?? 10;
+        $options['page'] = $options['page'] ?? 0;
+
         $collectionWeightArr = $this->getUserCollectionWeightArray($loggedInUserId);
         $preferredCollectionItems =$this->fetchPreferredCollectionIds($collectionWeightArr, $options);
 
@@ -129,7 +132,11 @@ final class CollectionService
         $recommendedCollections = Collection::whereIn('id', $collectionIds)->get();
         $sortedCollections = $this->sortRecommendedCollectionByScore($recommendedCollections, $preferredCollectionItems);
 
-        return $sortedCollections;
+        $collectionCount = Collection::count();
+
+        $paginatedList = new PaginatedList($sortedCollections, $collectionCount, $options['limit'], $options['page']);
+
+        return $paginatedList;
     }
 
     public function getCollectionUserMightAlsoLike($userId, $limit = 8)
@@ -154,7 +161,7 @@ final class CollectionService
         $collections = Collection::whereIn('id', $preferredCollectionItems->pluck('id')->toArray())->get();
 
         // 4. Sort by score DESC
-        $sortedCollections = $this->sortRecommendedCollectionByScore($collections, $preferredCollectionItems);
+        $sortedCollections = $this->sortRecommendedCollectionByScore($collections, $preferredCollectionItems->toArray());
 
         // 5. Limit the response again to ensure the response is not greater than the limit
         return $sortedCollections->take($limit);
@@ -221,6 +228,7 @@ final class CollectionService
         $filterTitle = $options['filter_title'] ?? null;
         $filterCategories = $options['filter_categories'] ?? null;
         $limit = $options['limit'] ?? 10;
+        $page = $options['page'] ?? 0;
 
         $response = Http::withHeaders([
                 'accept' => 'application/json',
@@ -230,7 +238,8 @@ final class CollectionService
                 'collection_weights' => $collectionWeights,
                 'filter_categories' => $filterCategories,
                 'filter_title' => $filterTitle,
-                'limit' => $limit
+                'limit' => $limit,
+                'page' => $page
             ]);
 
         if (!$response->successful()) {

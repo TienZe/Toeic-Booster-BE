@@ -8,6 +8,7 @@ class RecommendationRequest(BaseModel):
     limit: int = 10
     filter_categories: Optional[List[str]] = None
     filter_title: Optional[str] = None
+    page: int = 0
     class Config:
         schema_extra = {
             "example": {
@@ -17,7 +18,8 @@ class RecommendationRequest(BaseModel):
                 "collection_weights": [
                     {"collection_id": 1, "weight": 1}
                 ],
-                "limit": 5
+                "limit": 5,
+                "page": 0
             }
         }
 
