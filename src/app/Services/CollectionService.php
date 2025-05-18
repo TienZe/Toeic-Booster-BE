@@ -153,13 +153,14 @@ final class CollectionService
             ];
         }
 
-        $preferredCollections =$this->fetchPreferredCollectionIds($collectionWeightArr, $options);
+        $preferredCollectionItems =$this->fetchPreferredCollectionIds($collectionWeightArr, $options);
 
-        $collectionIds = array_column($preferredCollections, 'id');
+        $collectionIds = array_column($preferredCollectionItems, 'id');
 
         $recommendedCollections = Collection::whereIn('id', $collectionIds)->get();
+        $sortedCollections = $this->sortRecommendedCollectionByScore($recommendedCollections, $preferredCollectionItems);
 
-        return $recommendedCollections;
+        return $sortedCollections;
     }
 
     public function fetchPreferredCollectionIds($collectionWeights, $options)
@@ -169,15 +170,73 @@ final class CollectionService
         $limit = $options['limit'] ?? 10;
 
         $response = Http::withHeaders([
-            'accept' => 'application/json',
-            'Content-Type' => 'application/json',
-        ])
-        ->post(getenv('COLLECTION_RECOMMENDATION_ENDPOINT'), [
-            'collection_weights' => $collectionWeights,
-            'filter_categories' => $filterCategories,
-            'filter_title' => $filterTitle,
-            'limit' => $limit
-        ]);
+                'accept' => 'application/json',
+                'Content-Type' => 'application/json',
+            ])
+            ->post(getenv('COLLECTION_RECOMMENDATION_ENDPOINT') . "/recommendations", [
+                'collection_weights' => $collectionWeights,
+                'filter_categories' => $filterCategories,
+                'filter_title' => $filterTitle,
+                'limit' => $limit
+            ]);
+
+        if (!$response->successful()) {
+            // Handle error
+            $statusCode = $response->status();
+            $errorData = $response->json();
+
+            throw new \Exception("Failed to fetch preferred collection ids: $statusCode, $errorData");
+        }
+
+        $data = $response->json();
+
+        return $data['items'];
+    }
+
+    public function getSimilarCollections($collectionId, $limit = 10)
+    {
+        $similarCollectionResponse = $this->fetchSimilarCollections($collectionId, $limit);
+
+        $similarCollectionIds = array_column($similarCollectionResponse, 'id');
+        $similarCollections = Collection::whereIn('id', $similarCollectionIds)->get();
+
+        // Sort by score DESC
+        $sortedCollections = $this->sortRecommendedCollectionByScore($similarCollections, $similarCollectionResponse);
+
+        return $sortedCollections;
+    }
+
+    private function sortRecommendedCollectionByScore($collections, $recommendationItemResponse)
+    {
+        $collectionId2Score = [];
+        foreach ($recommendationItemResponse as $item) {
+            $collectionId2Score[(string)$item['id'] . "_score"] = $item['score'];
+        }
+
+        $sortedCollections = $collections->sort(function ($a, $b) use ($collectionId2Score) {
+            $compare = $collectionId2Score[$b->id . "_score"] - $collectionId2Score[$a->id . "_score"];
+
+            if ($compare < 0) {
+                return -1;
+            } else if ($compare > 0) {
+                return 1;
+            }
+
+            return 0;
+        });
+
+        return $sortedCollections;
+    }
+
+    public function fetchSimilarCollections($collectionId, $limit = 10)
+    {
+        $response = Http::withHeaders([
+                'accept' => 'application/json',
+                'Content-Type' => 'application/json',
+            ])
+            ->get(getenv('COLLECTION_RECOMMENDATION_ENDPOINT') . "/recommendations/similar-collections/{$collectionId}", [
+                'limit' => $limit
+            ]);
 
         if (!$response->successful()) {
             // Handle error

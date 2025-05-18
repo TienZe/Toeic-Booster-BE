@@ -79,4 +79,45 @@ async def get_recommendations(
             )
         )
     
-    return RecommendationResponse(items=items, count=len(items)) 
+    return RecommendationResponse(items=items, count=len(items))
+
+@router.get("/recommendations/similar-collections/{collection_id}", response_model=RecommendationResponse)
+async def get_similar_collections(
+    collection_id: str,
+    limit: int = 10,
+):
+    """
+    Get similar collections based on a given collection_id.
+    """
+    vector_dict = pinecone_service.fetch_vectors([collection_id])
+    
+    if vector_dict is None or len(vector_dict) == 0:
+        raise HTTPException(
+            status_code=404,
+            detail="Collection not found"
+        )
+    
+    vector = vector_dict[collection_id]
+    
+    results = pinecone_service.query_similar(
+        vector=vector,
+        limit=limit + 1,
+    )
+    
+    if len(results) < 1:
+        return RecommendationResponse(items=[], count=0)
+    
+    # Remove the first item (the same collection)
+    results = results[1:]
+    
+    # Transform results into response items
+    items = []
+    for match in results:
+        items.append(
+            RecommendationItem(
+                id=match.get("id", 0),
+                score=match.get("score", 0),
+            )
+        )
+    
+    return RecommendationResponse(items=items, count=len(items))

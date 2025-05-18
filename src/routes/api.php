@@ -42,6 +42,7 @@ Route::group([
     // 'middleware' => 'jwt.auth'
 ], function () {
     Route::get('/recommend', [CollectionController::class, 'recommendCollections'])->middleware('jwt.auth');
+    Route::get('/{id}/similar', [CollectionController::class, 'getSimilarCollections']);
 
     Route::get('/', [CollectionController::class, 'index']);
     Route::post('/', [CollectionController::class, 'store']);

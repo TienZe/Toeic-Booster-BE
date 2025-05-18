@@ -73,4 +73,9 @@ class CollectionController extends Controller
 
         return $collections;
     }
+
+    public function getSimilarCollections($id)
+    {
+        return $this->collectionService->getSimilarCollections($id);
+    }
 }
