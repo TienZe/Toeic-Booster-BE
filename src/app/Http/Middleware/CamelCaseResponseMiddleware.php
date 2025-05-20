@@ -39,7 +39,7 @@ class CamelCaseResponseMiddleware
         $result = [];
 
         foreach ($array as $key => $value) {
-            $newKey = $this->snakeToCamel($key);
+            $newKey = strlen($key) > 1 ? $this->snakeToCamel($key) : $key;
 
             if (is_array($value)) {
                 $result[$newKey] = $this->convertKeysToCamelCase($value);

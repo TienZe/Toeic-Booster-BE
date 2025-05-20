@@ -9,35 +9,32 @@ use Illuminate\Validation\Rule;
 
 class SaveToeicTestRequest extends FormRequest
 {
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
             'id' => 'sometimes|integer',
             'name' => 'sometimes|string',
             'question_groups' => 'sometimes|array',
-            'question_groups.*.id' => 'sometimes|integer',
-            'question_groups.*.transcript' => 'sometimes|string',
+            'question_groups.*.id' => 'sometimes',
+            'question_groups.*.transcript' => 'sometimes|nullable|string',
+            'question_groups.*.passage' => 'sometimes|nullable|string',
             'question_groups.*.part' => ['sometimes', Rule::in(ToeicPart::values())],
+            'question_groups.*.group_index' => 'integer',
             'question_groups.*.questions' => 'sometimes|array',
             'question_groups.*.questions.*.id' => 'sometimes|integer',
-            'question_groups.*.questions.*.questionNumber' => 'sometimes|integer',
-            'question_groups.*.questions.*.question' => 'sometimes|string',
-            'question_groups.*.questions.*.explanation' => 'sometimes|string',
-            'question_groups.*.questions.*.A' => 'sometimes|string',
-            'question_groups.*.questions.*.B' => 'sometimes|string',
-            'question_groups.*.questions.*.C' => 'sometimes|string',
-            'question_groups.*.questions.*.D' => 'sometimes|string',
-            'question_groups.*.questions.*.correctAnswer' => 'sometimes|string|in:A,B,C,D',
+            'question_groups.*.questions.*.question_number' => 'sometimes|integer',
+            'question_groups.*.questions.*.question' => 'sometimes|nullable|string',
+            'question_groups.*.questions.*.explanation' => 'sometimes|nullable|string',
+            'question_groups.*.questions.*.A' => 'sometimes|nullable|string',
+            'question_groups.*.questions.*.B' => 'sometimes|nullable|string',
+            'question_groups.*.questions.*.C' => 'sometimes|nullable|string',
+            'question_groups.*.questions.*.D' => 'sometimes|nullable|string',
+            'question_groups.*.questions.*.correct_answer' => 'sometimes|nullable|string|in:A,B,C,D',
             'question_groups.*.medias' => 'sometimes|array',
             'question_groups.*.medias.*.id' => 'sometimes|integer',
-            'question_groups.*.medias.*.fileUrl' => 'sometimes|string',
-            'question_groups.*.medias.*.order' => 'sometimes|integer',
-            'question_groups.*.medias.*.fileType' => ['sometimes', Rule::in(MediaFileType::IMAGE, MediaFileType::AUDIO)],
+            'question_groups.*.medias.*.file_url' => 'sometimes|string',
+            'question_groups.*.medias.*.order' => 'sometimes|nullable|integer',
+            'question_groups.*.medias.*.file_type' => ['sometimes', Rule::in(MediaFileType::IMAGE, MediaFileType::AUDIO)],
         ];
     }
 }

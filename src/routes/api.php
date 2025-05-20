@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CollectionTagController;
 use App\Http\Controllers\LessonLearningController;
+use App\Http\Controllers\ToeicTestController;
 use App\Http\Controllers\WordFolderController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
@@ -142,6 +143,14 @@ Route::group([
     'prefix' => 'lesson-vocabularies',
 ], function () {
     Route::delete('/{lessonVocabularyId}', [LessonVocabularyController::class, 'delete']);
+});
+
+Route::group([
+    'prefix' => 'toeic-tests',
+], function () {
+    Route::post('/', [ToeicTestController::class, 'save']);
+    Route::get('/', [ToeicTestController::class, 'index']);
+    Route::get('/{id}', [ToeicTestController::class, 'show']);
 });
 
 Route::post('/tts', TtsController::class);

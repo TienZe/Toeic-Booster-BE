@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Entities\PaginatedList;
 use App\Models\ToeicTest;
 use App\Models\QuestionGroup;
 use App\Models\Question;
@@ -11,14 +12,17 @@ use Illuminate\Support\Facades\DB;
 
 class ToeicTestService
 {
-    public function saveToeicTest(array $data): void
+    public function saveToeicTest(array $data): ToeicTest|null
     {
-        DB::transaction(function () use ($data) {
+        $savedToeicTest = null;
+
+        DB::transaction(function () use ($data, &$savedToeicTest) {
             // Save or update ToeicTest
             $toeicTest = (isset($data['id']) && $data['id']) ? ToeicTest::find($data['id']) : new ToeicTest();
             if (!$toeicTest) {
                 $toeicTest = new ToeicTest();
             }
+
             $toeicTest->fill([
                 'name' => $data['name'] ?? $toeicTest->name,
                 'description' => $data['description'] ?? $toeicTest->description,
@@ -34,8 +38,10 @@ class ToeicTestService
                     }
                     $questionGroup->fill([
                         'part' => $groupData['part'] ?? $questionGroup->part,
-                        'transcript' => $groupData['transcript'] ?? $questionGroup->transcript,
+                        'transcript' => isset($groupData['transcript']) ? $groupData['transcript'] : $questionGroup->transcript,
+                        'passage' => isset($groupData['passage']) ? $groupData['passage'] : $questionGroup->passage,
                         'toeic_test_id' => $toeicTest->id,
+                        'group_index' => isset($groupData['group_index']) ? $groupData['group_index'] : $questionGroup->group_index,
                     ]);
                     $questionGroup->save();
 
@@ -47,14 +53,14 @@ class ToeicTestService
                                 $question = new Question();
                             }
                             $question->fill([
-                                'question' => $questionData['question'] ?? $question->question,
-                                'question_number' => $questionData['questionNumber'] ?? $question->question_number,
-                                'explanation' => $questionData['explanation'] ?? $question->explanation,
+                                'question' => $questionData['question'] ?? $question->question ?? "",
+                                'question_number' => $questionData['question_number'] ?? $question->question_number,
+                                'explanation' => isset($questionData['explanation']) ? $questionData['explanation'] : $question->explanation,
                                 'A' => $questionData['A'] ?? $question->A,
                                 'B' => $questionData['B'] ?? $question->B,
                                 'C' => $questionData['C'] ?? $question->C,
                                 'D' => $questionData['D'] ?? $question->D,
-                                'correct_answer' => $questionData['correctAnswer'] ?? $question->correct_answer,
+                                'correct_answer' => $questionData['correct_answer'] ?? $question->correct_answer,
                                 'question_group_id' => $questionGroup->id,
                             ]);
                             $question->save();
@@ -69,7 +75,7 @@ class ToeicTestService
                                 $media = new QuestionMedia();
                             }
                             // Handle Cloudinary upload if fileUrl is base64, otherwise just save the URL
-                            $fileUrl = $mediaData['fileUrl'] ?? null;
+                            $fileUrl = $mediaData['file_url'] ?? null;
                             $isBase64 = $fileUrl && !str_starts_with($fileUrl, 'http');
 
                             if ($isBase64) {
@@ -77,7 +83,7 @@ class ToeicTestService
                                 if ($media->file_public_id) {
                                     Cloudinary::uploadApi()->destroy($media->file_public_id);
                                 }
-                                $folder = $mediaData['fileType'] === 'audio' ? 'question_medias/audio' : 'question_medias/image';
+                                $folder = $mediaData['file_type'] === 'audio' ? 'question_medias/audio' : 'question_medias/image';
                                 $uploadResult = Cloudinary::uploadApi()->upload($fileUrl, [
                                     'folder' => $folder,
                                     'resource_type' => 'auto',
@@ -89,7 +95,7 @@ class ToeicTestService
                                 // Do not change file_public_id if just using an existing URL
                             }
                             $media->fill([
-                                'file_type' => $mediaData['fileType'] ?? $media->file_type,
+                                'file_type' => $mediaData['file_type'] ?? $media->file_type,
                                 'order' => $mediaData['order'] ?? $media->order,
                                 'question_group_id' => $questionGroup->id,
                             ]);
@@ -98,11 +104,41 @@ class ToeicTestService
                     }
                 }
             }
+
+            $savedToeicTest = $toeicTest;
         });
+
+        if (isset($savedToeicTest) && isset($savedToeicTest->id)) {
+            return $this->getToeicTestById($savedToeicTest->id);
+        }
+
+        return null;
     }
 
-    public function getToeicTest(int $id)
+    public function getToeicTestById($id)
     {
-        return ToeicTest::with('questionGroups.questions', 'questionGroups.medias')->find($id);
+        return ToeicTest::with(['questionGroups' => function ($query) {
+            $query->orderBy('group_index');
+        }, 'questionGroups.questions', 'questionGroups.medias'])->where('id', $id)->first();
+    }
+
+    public function getListOfToeicTests(array $options)
+    {
+        $limit = $options['limit'] ?? 10;
+        $page = $options['page'] ?? 0;
+
+        $query = ToeicTest::query();
+
+        if (isset($options['search'])) {
+            $query->where('name', 'like', '%' . $options['search'] . '%');
+        }
+
+        if (isset($options['filteredTag'])) {
+            // TODO: filter by tag id
+        }
+
+        $paginatedList = PaginatedList::createFromQueryBuilder($query, $page, $limit);
+
+        return $paginatedList;
     }
 }

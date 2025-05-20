@@ -24,6 +24,7 @@ return new class extends Migration
             $table->id();
             $table->string('part');
             $table->text('transcript')->nullable();
+            $table->text('passage')->nullable();
             $table->foreignId('toeic_test_id')->constrained('toeic_tests')->onDelete('cascade');
             $table->timestamps();
         });
@@ -32,9 +33,9 @@ return new class extends Migration
         Schema::create('question_medias', function (Blueprint $table) {
             $table->id();
             $table->string('file_url');
-            $table->string('file_public_id');
+            $table->string('file_public_id')->nullable();
             $table->string('file_type');
-            $table->integer('order');
+            $table->integer('order')->nullable();
             $table->foreignId('question_group_id')->constrained('question_groups')->onDelete('cascade');
             $table->timestamps();
         });
@@ -49,7 +50,7 @@ return new class extends Migration
             $table->text('B')->nullable();
             $table->text('C')->nullable();
             $table->text('D')->nullable();
-            $table->enum('correct_answer', ['A', 'B', 'C', 'D']);
+            $table->enum('correct_answer', ['A', 'B', 'C', 'D'])->nullable();
             $table->foreignId('question_group_id')->constrained('question_groups')->onDelete('cascade');
             $table->timestamps();
         });

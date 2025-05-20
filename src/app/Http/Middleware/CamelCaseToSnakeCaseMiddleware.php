@@ -33,7 +33,7 @@ class CamelCaseToSnakeCaseMiddleware
         $result = [];
 
         foreach ($array as $key => $value) {
-            $newKey = $this->camelToSnake($key);
+            $newKey = strlen($key) > 1 ? $this->camelToSnake($key) : $key;
 
             if (is_array($value)) {
                 $result[$newKey] = $this->convertKeysToSnakeCase($value);

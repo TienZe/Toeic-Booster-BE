@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-enum ToeicPart
+enum ToeicPart: string
 {
    case PART_1 = 'part1';
    case PART_2 = 'part2';
