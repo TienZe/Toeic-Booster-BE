@@ -12,7 +12,8 @@ class GetToeicTestsRequest extends FormRequest
             'page' => 'sometimes|integer|min:0',
             'limit' => 'sometimes|integer|min:1',
             'search' => 'sometimes|string',
-            'filteredTag' => 'sometimes|numeric'
+            'filtered_tag' => 'sometimes|numeric',
+            'with_stats' => 'sometimes|boolean',
         ];
     }
 }

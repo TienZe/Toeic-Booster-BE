@@ -133,12 +133,21 @@ class ToeicTestService
             $query->where('name', 'like', '%' . $options['search'] . '%');
         }
 
-        if (isset($options['filteredTag'])) {
+        if (isset($options['filtered_tag'])) {
             // TODO: filter by tag id
+        }
+
+        if (isset($options['with_stats'])) {
+            // TODO: add stats: comment count, taken student count,
         }
 
         $paginatedList = PaginatedList::createFromQueryBuilder($query, $page, $limit);
 
         return $paginatedList;
+    }
+
+    public function getToeicTestInfo($id)
+    {
+        return ToeicTest::find($id);
     }
 }

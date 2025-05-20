@@ -33,4 +33,9 @@ class ToeicTestController extends Controller
     {
         return $this->toeicTestService->getToeicTestById($id);
     }
+
+    public function getToeicTestInfo($id)
+    {
+        return $this->toeicTestService->getToeicTestInfo($id);
+    }
 }
