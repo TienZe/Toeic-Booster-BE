@@ -2,11 +2,16 @@
 
 namespace App\Models;
 
+use App\Enums\ToeicPart;
+use App\Helpers\ToeicHelper;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 
 class ToeicTestAttempt extends Model
 {
     protected $guarded = [];
+
+    protected $appends = ['is_full_test'];
 
     public function userAnswers()
     {
@@ -16,5 +21,20 @@ class ToeicTestAttempt extends Model
     public function toeicTest()
     {
         return $this->belongsTo(ToeicTest::class);
+    }
+
+    protected function selectedParts(): Attribute
+    {
+        return Attribute::make(
+            get: fn (mixed $value) => explode(',', $value),
+            set: fn (mixed $value) => is_array($value) ? implode(',', $value) : $value,
+        );
+    }
+
+    protected function getIsFullTestAttribute()
+    {
+        $selectedParts = $this->selected_parts;
+
+        return $selectedParts === ToeicHelper::ALL_PARTS;
     }
 }

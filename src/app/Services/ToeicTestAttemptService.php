@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Enums\ToeicPart;
-use App\Helpers\ToeicScoreHelper;
+use App\Helpers\ToeicHelper;
 use App\Models\Question;
 use Illuminate\Support\Facades\DB;
 use App\Models\ToeicTestAttempt;
@@ -44,8 +44,8 @@ class ToeicTestAttemptService
                 }
             }
 
-            $lcScore = ToeicScoreHelper::LISTENING_SCORE_MAP[$lcCorrectQuestions] ?? 0;
-            $rcScore = ToeicScoreHelper::READING_SCORE_MAP[$rcCorrectQuestions] ?? 0;
+            $lcScore = ToeicHelper::LISTENING_SCORE_MAP[$lcCorrectQuestions] ?? 0;
+            $rcScore = ToeicHelper::READING_SCORE_MAP[$rcCorrectQuestions] ?? 0;
 
             $attemptData['listening_score'] = $lcScore;
             $attemptData['reading_score'] = $rcScore;
@@ -70,5 +70,33 @@ class ToeicTestAttemptService
 
             return $attempt->refresh()->load('userAnswers');
         });
+    }
+
+    public function getAttemptsOfUserByToeicTestId($userId, $toeicTestId)
+    {
+        $attempts = ToeicTestAttempt::with('userAnswers')->where('user_id', $userId)
+            ->where('toeic_test_id', $toeicTestId)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $attempts->each(function ($attempt) {
+            // Append number of questions
+            $totalQuestions = 0;
+
+            foreach ($attempt->selected_parts as $part) {
+                $totalQuestions += ToeicHelper::getNumberOfQuestionsByPart($part);
+            }
+
+            $attempt->total_questions = $totalQuestions;
+
+            // Append number of correct questions
+            $correctQuestions = $attempt->userAnswers->filter(function ($userAnswer) {
+                return $userAnswer->correct_answer === $userAnswer->choice;
+            })->count();
+
+            $attempt->number_of_correct_questions = $correctQuestions;
+        });
+
+        return $attempts;
     }
 }

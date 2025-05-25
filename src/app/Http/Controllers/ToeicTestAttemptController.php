@@ -4,12 +4,26 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ToeicTestAttempt\SaveToeicAttemptRequest;
 use App\Services\ToeicTestAttemptService;
+use Illuminate\Http\Request;
 
 class ToeicTestAttemptController extends Controller
 {
-    public function store(SaveToeicAttemptRequest $request, ToeicTestAttemptService $service)
+    private $toeicTestAttemptService;
+
+    public function __construct(ToeicTestAttemptService $toeicTestAttemptService)
     {
-        $result = $service->saveAttempt($request->validated(), $request->user()->id);
+        $this->toeicTestAttemptService = $toeicTestAttemptService;
+    }
+
+    public function store(SaveToeicAttemptRequest $request)
+    {
+        $result = $this->toeicTestAttemptService->saveAttempt($request->validated(), $request->user()->id);
+        return $result;
+    }
+
+    public function getAttemptsOfUser(Request $request)
+    {
+        $result = $this->toeicTestAttemptService->getAttemptsOfUserByToeicTestId($request->user()->id, $request->toeic_test_id);
         return $result;
     }
 }

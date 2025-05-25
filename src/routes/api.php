@@ -160,6 +160,7 @@ Route::group([
     'middleware' => 'jwt.auth'
 ], function () {
     Route::post('/', [ToeicTestAttemptController::class, 'store']);
+    Route::get('/', [ToeicTestAttemptController::class, 'getAttemptsOfUser']);
 });
 
 Route::post('/tts', TtsController::class);

@@ -2,13 +2,15 @@
 
 namespace App\Helpers;
 
+use App\Enums\ToeicPart;
+
 /**
  * Provides mapping from number of correct answers to TOEIC scores
  * for Reading and Listening sections, based on the official ETS conversion tables.
  *
  * Source: https://ehouse.edu.vn/thang-diem-toeic/
  */
-class ToeicScoreHelper
+class ToeicHelper
 {
     // TOEIC Reading: [number_correct => score]
     public const READING_SCORE_MAP = [
@@ -39,4 +41,29 @@ class ToeicScoreHelper
         90 => 465, 91 => 470, 92 => 475, 93 => 480, 94 => 485, 95 => 490, 96 => 495, 97 => 495, 98 => 495, 99 => 495,
         100 => 495,
     ];
+
+    public const PART_2_NUMBER_OF_QUESTIONS = [
+        ToeicPart::PART_1->value => 6,
+        ToeicPart::PART_2->value => 25,
+        ToeicPart::PART_3->value => 39,
+        ToeicPart::PART_4->value => 30,
+        ToeicPart::PART_5->value => 30,
+        ToeicPart::PART_6->value => 16,
+        ToeicPart::PART_7->value => 54,
+    ];
+
+    public const ALL_PARTS = [
+        ToeicPart::PART_1->value,
+        ToeicPart::PART_2->value,
+        ToeicPart::PART_3->value,
+        ToeicPart::PART_4->value,
+        ToeicPart::PART_5->value,
+        ToeicPart::PART_6->value,
+        ToeicPart::PART_7->value,
+    ];
+
+    public static function getNumberOfQuestionsByPart(string $part)
+    {
+        return self::PART_2_NUMBER_OF_QUESTIONS[$part] ?? 0;
+    }
 }
