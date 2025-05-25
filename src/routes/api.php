@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CollectionTagController;
 use App\Http\Controllers\LessonLearningController;
+use App\Http\Controllers\ToeicTestAttemptController;
 use App\Http\Controllers\ToeicTestController;
 use App\Http\Controllers\WordFolderController;
 use Illuminate\Support\Facades\Route;
@@ -152,6 +153,13 @@ Route::group([
     Route::get('/', [ToeicTestController::class, 'index']);
     Route::get('/{id}/info', [ToeicTestController::class, 'getToeicTestInfo']);
     Route::get('/{id}', [ToeicTestController::class, 'show']);
+});
+
+Route::group([
+    'prefix' => 'toeic-test-attempts',
+    'middleware' => 'jwt.auth'
+], function () {
+    Route::post('/', [ToeicTestAttemptController::class, 'store']);
 });
 
 Route::post('/tts', TtsController::class);
