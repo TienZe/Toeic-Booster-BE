@@ -7,4 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 class Question extends Model
 {
     protected $guarded = [];
+
+    public function questionGroup()
+    {
+        return $this->belongsTo(QuestionGroup::class);
+    }
 }

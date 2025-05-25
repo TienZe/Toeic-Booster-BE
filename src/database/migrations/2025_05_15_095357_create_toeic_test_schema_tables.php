@@ -75,6 +75,7 @@ return new class extends Migration
             $table->foreignId('toeic_test_attempt_id')->constrained('toeic_test_attempts')->onDelete('cascade');
             $table->foreignId('question_id')->constrained('questions')->onDelete('cascade');
             $table->enum('choice', ['A', 'B', 'C', 'D']);
+            $table->enum('correct_answer', ['A', 'B', 'C', 'D']);
             $table->timestamps();
         });
     }
