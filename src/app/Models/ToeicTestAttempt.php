@@ -23,7 +23,7 @@ class ToeicTestAttempt extends Model
         return $this->belongsTo(ToeicTest::class);
     }
 
-    protected function selectedParts(): Attribute
+    protected function selectedParts(): Attribute // new way to define accessor and mutator
     {
         return Attribute::make(
             get: fn (mixed $value) => explode(',', $value),
@@ -31,7 +31,7 @@ class ToeicTestAttempt extends Model
         );
     }
 
-    protected function getIsFullTestAttribute()
+    protected function getIsFullTestAttribute() // old way to define accessor
     {
         $selectedParts = $this->selected_parts;
 

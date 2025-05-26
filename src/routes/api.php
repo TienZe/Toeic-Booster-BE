@@ -161,6 +161,7 @@ Route::group([
 ], function () {
     Route::post('/', [ToeicTestAttemptController::class, 'store']);
     Route::get('/', [ToeicTestAttemptController::class, 'getAttemptsOfUser']);
+    Route::get('/{attemptId}/details', [ToeicTestAttemptController::class, 'getAttemptDetails']);
 });
 
 Route::post('/tts', TtsController::class);

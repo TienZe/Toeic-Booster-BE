@@ -5,12 +5,20 @@ namespace App\Services;
 use App\Enums\ToeicPart;
 use App\Helpers\ToeicHelper;
 use App\Models\Question;
+use App\Models\ToeicTest;
 use Illuminate\Support\Facades\DB;
 use App\Models\ToeicTestAttempt;
 use App\Models\UserAnswer;
 
 class ToeicTestAttemptService
 {
+    protected $toeicTestService;
+
+    public function __construct(ToeicTestService $toeicTestService)
+    {
+        $this->toeicTestService = $toeicTestService;
+    }
+
     public function saveAttempt(array $data, int $userId)
     {
         return DB::transaction(function () use ($data, $userId) {
@@ -98,5 +106,28 @@ class ToeicTestAttemptService
         });
 
         return $attempts;
+    }
+
+    public function getAttemptDetails($attemptId)
+    {
+        $attempt = ToeicTestAttempt::find($attemptId);
+
+        $toeicTest = ToeicTest::with(['questionGroups' => function ($query) use ($attempt) {
+            $query->whereIn('part', $attempt->selected_parts);
+            $query->orderBy('group_index');
+        }, 'questionGroups.questions.userAnswers' => function ($query) use ($attempt) {
+            $query->where('toeic_test_attempt_id', $attempt->id);
+        }, 'questionGroups.medias'])->where('id', $attempt->toeic_test_id)->first();
+
+        foreach ($toeicTest->questionGroups as $questionGroup) {
+            foreach ($questionGroup->questions as $question) {
+                $question->user_answer = $question->userAnswers->first();
+                unset($question->userAnswers);
+            }
+        }
+
+        $attempt->toeic_test = $toeicTest;
+
+        return $attempt;
     }
 }

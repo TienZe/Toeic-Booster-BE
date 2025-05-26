@@ -26,4 +26,10 @@ class ToeicTestAttemptController extends Controller
         $result = $this->toeicTestAttemptService->getAttemptsOfUserByToeicTestId($request->user()->id, $request->toeic_test_id);
         return $result;
     }
+
+    public function getAttemptDetails($attemptId)
+    {
+        $result = $this->toeicTestAttemptService->getAttemptDetails($attemptId);
+        return $result;
+    }
 }
