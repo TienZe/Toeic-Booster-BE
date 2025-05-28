@@ -14,4 +14,9 @@ class UserAnswer extends Model
     {
         return $this->correct_answer === $this->choice;
     }
+
+    public function question()
+    {
+        return $this->belongsTo(Question::class);
+    }
 }

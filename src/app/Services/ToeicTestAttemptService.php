@@ -108,7 +108,7 @@ class ToeicTestAttemptService
         return $attempts;
     }
 
-    public function getAttemptDetails($attemptId)
+    public function getAttemptDetails($attemptId, $options = [])
     {
         $attempt = ToeicTestAttempt::find($attemptId);
 
@@ -117,7 +117,8 @@ class ToeicTestAttemptService
             $query->orderBy('group_index');
         }, 'questionGroups.questions.userAnswers' => function ($query) use ($attempt) {
             $query->where('toeic_test_attempt_id', $attempt->id);
-        }, 'questionGroups.medias'])->where('id', $attempt->toeic_test_id)->first();
+        }, 'questionGroups.questions.userAnswers.question.questionGroup', // load inverse relation from userAnswers to question and to questionGroup
+        'questionGroups.medias'])->where('id', $attempt->toeic_test_id)->first();
 
         foreach ($toeicTest->questionGroups as $questionGroup) {
             foreach ($questionGroup->questions as $question) {
@@ -127,6 +128,45 @@ class ToeicTestAttemptService
         }
 
         $attempt->toeic_test = $toeicTest;
+
+        if (isset($options['with_result_summary'])) {
+            // 1. Number of correct and incorrect questions
+            $questionOfSelectedParts = $toeicTest->questionGroups->pluck('questions')->flatten();
+            $userAnswers = $questionOfSelectedParts->pluck('user_answer')->filter(); // only include record for answered questions
+
+            $attempt->number_of_correct_questions = $userAnswers->filter(function ($userAnswer) {
+                return $userAnswer->is_correct;
+            })->count();
+
+            $attempt->number_of_incorrect_questions = $userAnswers->filter(function ($userAnswer) {
+                return !$userAnswer->is_correct;
+            })->count();
+
+            // 2. Total questions of selected parts
+            $totalQuestions = 0;
+            foreach ($attempt->selected_parts as $part) {
+                $totalQuestions += ToeicHelper::getNumberOfQuestionsByPart($part);
+            }
+            $attempt->total_questions = $totalQuestions;
+
+            // 3. Number of correct questions of each skills
+            $correctUserAnswers = $userAnswers->filter(function ($userAnswer) {
+                return $userAnswer->is_correct;
+            });
+
+            $correctRCAnswers = $correctUserAnswers->filter(function ($userAnswer) {
+                $part = $userAnswer->question->questionGroup->part;
+                return ToeicPart::isReading($part);
+            });
+
+            $correctLCAnswers = $correctUserAnswers->filter(function ($userAnswer) {
+                $part = $userAnswer->question->questionGroup->part;
+                return ToeicPart::isListening($part);
+            });
+
+            $attempt->num_correct_lc_questions = $correctLCAnswers->count();
+            $attempt->num_correct_rc_questions = $correctRCAnswers->count();
+        }
 
         return $attempt;
     }

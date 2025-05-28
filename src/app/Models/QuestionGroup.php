@@ -10,7 +10,7 @@ class QuestionGroup extends Model
 
     public function questions()
     {
-        return $this->hasMany(Question::class);
+        return $this->hasMany(Question::class)->orderBy('question_number');
     }
 
     public function medias()

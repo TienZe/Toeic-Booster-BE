@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ToeicTestAttempt\GetAttemptDetailsRequest;
 use App\Http\Requests\ToeicTestAttempt\SaveToeicAttemptRequest;
 use App\Services\ToeicTestAttemptService;
 use Illuminate\Http\Request;
@@ -27,9 +28,9 @@ class ToeicTestAttemptController extends Controller
         return $result;
     }
 
-    public function getAttemptDetails($attemptId)
+    public function getAttemptDetails($attemptId, GetAttemptDetailsRequest $request)
     {
-        $result = $this->toeicTestAttemptService->getAttemptDetails($attemptId);
+        $result = $this->toeicTestAttemptService->getAttemptDetails($attemptId, $request->validated());
         return $result;
     }
 }
