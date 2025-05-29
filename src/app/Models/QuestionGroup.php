@@ -15,6 +15,6 @@ class QuestionGroup extends Model
 
     public function medias()
     {
-        return $this->hasMany(QuestionMedia::class);
+        return $this->hasMany(QuestionMedia::class)->orderBy('order');
     }
 }

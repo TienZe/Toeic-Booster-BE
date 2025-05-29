@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CollectionTagController;
 use App\Http\Controllers\LessonLearningController;
+use App\Http\Controllers\ToeicChatController;
 use App\Http\Controllers\ToeicTestAttemptController;
 use App\Http\Controllers\ToeicTestController;
 use App\Http\Controllers\WordFolderController;
@@ -165,3 +166,10 @@ Route::group([
 });
 
 Route::post('/tts', TtsController::class);
+
+Route::group([
+    'prefix' => 'chat',
+], function () {
+    Route::post('/', [ToeicChatController::class, 'chat']);
+    Route::get('/history/{attemptId}/{questionId}', [ToeicChatController::class, 'getChatHistory']);
+});
