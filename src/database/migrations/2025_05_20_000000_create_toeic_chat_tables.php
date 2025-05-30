@@ -21,7 +21,7 @@ return new class extends Migration
         Schema::create('toeic_chat_contents', function (Blueprint $table) {
             $table->id();
             $table->foreignId('toeic_chat_history_id')->constrained('toeic_chat_histories')->onDelete('cascade');
-            $table->text('content_serialized');
+            $table->mediumText('content_serialized');
             $table->timestamps();
         });
     }

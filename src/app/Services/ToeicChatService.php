@@ -19,16 +19,7 @@ class ToeicChatService
                 ->first();
 
             if (!$chatHistory) {
-                $chatHistory = ToeicChatHistory::create([
-                    'toeic_test_attempt_id' => $attemptId,
-                    'question_id' => $questionId,
-                ]);
-
-                // Create the first instruction from question
-                $firstInstructionFromQuestion = GeminiChatBotService::createInstructionFromQuestion($questionId);
-                $chatHistory->contents()->create([
-                    'content_serialized' => serialize($firstInstructionFromQuestion),
-                ]);
+                $chatHistory = $this->createChatHistory($attemptId, $questionId);
             }
 
             // Generate the user content from user text
@@ -55,6 +46,22 @@ class ToeicChatService
         return $responseText;
     }
 
+    public function createChatHistory($attemptId, $questionId)
+    {
+        $chatHistory = ToeicChatHistory::create([
+            'toeic_test_attempt_id' => $attemptId,
+            'question_id' => $questionId,
+        ]);
+
+        // Create the first instruction from question
+        $firstInstructionFromQuestion = GeminiChatBotService::createInstructionFromQuestion($questionId);
+        $chatHistory->contents()->create([
+            'content_serialized' => serialize($firstInstructionFromQuestion),
+        ]);
+
+        return $chatHistory;
+    }
+
     public function getChatHistory($attemptId, $questionId)
     {
         $chatHistory = ToeicChatHistory::with('contents')
@@ -64,10 +71,7 @@ class ToeicChatService
             ->first();
 
         if (!$chatHistory) {
-            $chatHistory = ToeicChatHistory::create([
-                'toeic_test_attempt_id' => $attemptId,
-                'question_id' => $questionId,
-            ]);
+            $chatHistory = $this->createChatHistory($attemptId, $questionId);
         }
 
         $chatHistory->chatContents = $chatHistory->contents->slice(1);

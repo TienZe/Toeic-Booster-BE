@@ -6,6 +6,7 @@ use App\Http\Controllers\ToeicChatController;
 use App\Http\Controllers\ToeicTestAttemptController;
 use App\Http\Controllers\ToeicTestController;
 use App\Http\Controllers\WordFolderController;
+use App\Services\GeminiChatBotService;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
@@ -172,4 +173,12 @@ Route::group([
 ], function () {
     Route::post('/', [ToeicChatController::class, 'chat']);
     Route::get('/history/{attemptId}/{questionId}', [ToeicChatController::class, 'getChatHistory']);
+});
+
+Route::group([
+    'prefix' => 'test'
+], function () {
+    Route::get('/prompt-instruction/{questionId}', function ($questionId) {
+        return response()->json(GeminiChatBotService::createInstructionFromQuestion($questionId));
+    });
 });

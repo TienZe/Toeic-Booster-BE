@@ -35,7 +35,10 @@ class GeminiChatBotService
         $questionGroup = $question->questionGroup;
         $partNumber = substr($questionGroup->part, -1);
 
-        $systemInstruction = "Các câu trả lời cần dựa vào ngữ cảnh của câu hỏi TOEIC được cung cấp bên dưới:";
+        $systemInstruction = "I will provide a TOEIC question.
+All your responses must be strictly based on the context of that specific TOEIC question.
+Do not provide any information outside of that context, even if I ask.
+Keep your answers concise.";
 
         $prompt = $systemInstruction;
         $prompt .= "\n\nCâu hỏi số $question->question_number - Part $partNumber: $question->question";
@@ -52,12 +55,12 @@ class GeminiChatBotService
 
         $prompt .= "\n\nGiải thích: " . $question->explanation;
 
-        if ($question->transcript) {
-            $prompt .= "\n\nTranscript: " . $question->transcript;
+        if ($questionGroup->transcript) {
+            $prompt .= "\n\nTranscript: " . $questionGroup->transcript;
         }
 
-        if ($question->passage) {
-            $prompt .= "\n\nĐoạn văn: " . $question->passage;
+        if ($questionGroup->passage) {
+            $prompt .= "\n\nĐoạn văn: " . $questionGroup->passage;
         }
 
         $images = $questionGroup->medias->filter(function ($media) {
@@ -85,8 +88,10 @@ class GeminiChatBotService
     {
         $result = Gemini::generativeModel(model: 'gemini-2.0-flash')
             ->withSystemInstruction(Content::parse(
-                "Bạn là một gia sư AI thân thiện và chuyên nghiệp, chuyên luyện thi TOEIC 2 kỹ năng (Listening & Reading). Hãy trả lời ngắn gọn, dễ hiểu, đúng trọng tâm."
-            ))
+"You are a friendly and professional AI tutor, specialized in preparing students for the TOEIC Listening and Reading test.
+Always respond concisely, clearly, and to the point. Always respond in Vietnamese.
+If the question is unrelated to TOEIC, respond with: 'Xin lỗi, tôi không thuộc lĩnh vực mà bạn đang đề cập'.
+If asked about model information, respond with: 'Tôi được huấn luyện bởi Toeic Booster.'"))
             ->generateContent(...$contents);
 
         $parts = $result->parts();
