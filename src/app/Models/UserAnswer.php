@@ -19,4 +19,9 @@ class UserAnswer extends Model
     {
         return $this->belongsTo(Question::class);
     }
+
+    public function attempt()
+    {
+        return $this->belongsTo(ToeicTestAttempt::class, 'toeic_test_attempt_id');
+    }
 }

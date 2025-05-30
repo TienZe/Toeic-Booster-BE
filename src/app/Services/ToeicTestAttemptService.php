@@ -6,6 +6,7 @@ use App\Enums\ToeicPart;
 use App\Helpers\ToeicHelper;
 use App\Models\Question;
 use App\Models\ToeicTest;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use App\Models\ToeicTestAttempt;
 use App\Models\UserAnswer;
@@ -80,34 +81,6 @@ class ToeicTestAttemptService
         });
     }
 
-    public function getAttemptsOfUserByToeicTestId($userId, $toeicTestId)
-    {
-        $attempts = ToeicTestAttempt::with('userAnswers')->where('user_id', $userId)
-            ->where('toeic_test_id', $toeicTestId)
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        $attempts->each(function ($attempt) {
-            // Append number of questions
-            $totalQuestions = 0;
-
-            foreach ($attempt->selected_parts as $part) {
-                $totalQuestions += ToeicHelper::getNumberOfQuestionsByPart($part);
-            }
-
-            $attempt->total_questions = $totalQuestions;
-
-            // Append number of correct questions
-            $correctQuestions = $attempt->userAnswers->filter(function ($userAnswer) {
-                return $userAnswer->correct_answer === $userAnswer->choice;
-            })->count();
-
-            $attempt->number_of_correct_questions = $correctQuestions;
-        });
-
-        return $attempts;
-    }
-
     public function getAttemptDetails($attemptId, $options = [])
     {
         $attempt = ToeicTestAttempt::find($attemptId);
@@ -134,22 +107,9 @@ class ToeicTestAttemptService
             $questionOfSelectedParts = $toeicTest->questionGroups->pluck('questions')->flatten();
             $userAnswers = $questionOfSelectedParts->pluck('user_answer')->filter(); // only include record for answered questions
 
-            $attempt->number_of_correct_questions = $userAnswers->filter(function ($userAnswer) {
-                return $userAnswer->is_correct;
-            })->count();
+            $attempt->append(['num_of_incorrect_answers', 'num_of_correct_answers', 'total_questions']);
 
-            $attempt->number_of_incorrect_questions = $userAnswers->filter(function ($userAnswer) {
-                return !$userAnswer->is_correct;
-            })->count();
-
-            // 2. Total questions of selected parts
-            $totalQuestions = 0;
-            foreach ($attempt->selected_parts as $part) {
-                $totalQuestions += ToeicHelper::getNumberOfQuestionsByPart($part);
-            }
-            $attempt->total_questions = $totalQuestions;
-
-            // 3. Number of correct questions of each skills
+            // 2. Number of correct questions of each skills
             $correctUserAnswers = $userAnswers->filter(function ($userAnswer) {
                 return $userAnswer->is_correct;
             });
@@ -169,5 +129,186 @@ class ToeicTestAttemptService
         }
 
         return $attempt;
+    }
+
+    public function getAccuracyByDateOfAttempts($attempts)
+    {
+        $attemptsByDate = $attempts->groupBy(function ($attempt) {
+            return $attempt->created_at->format('Y-m-d');
+        });
+
+        $accuracyByDate = collect();
+
+        foreach ($attemptsByDate as $date => $attempts) {
+            $totalCorrectAnswers = $attempts->sum(function ($attempt) {
+                return $attempt->num_of_correct_answers;
+            });
+
+            $totalAnsweredQuestions = $attempts->sum(function ($attempt) {
+                return $attempt->userAnswers->count();
+            });
+
+            $accuracyByDate->push([
+                "date" => $date,
+                "accuracy" => round($totalCorrectAnswers / $totalAnsweredQuestions * 100, 2)
+            ]);
+        }
+
+        $sortedAccuracyByDate = $accuracyByDate->sortBy('date'); // no need to convert to date object because date is in format lexicographically Y-m-d
+
+        return $sortedAccuracyByDate->map(function ($item) {
+            $item['date'] = Carbon::parse($item['date'])->format('d/m/Y');
+            return $item;
+        });
+    }
+
+    public function getNumOfCorrectAnswersGroupedByPart($attempts)
+    {
+        $allUserAnswers = $attempts->pluck('userAnswers')->flatten();
+
+        $answersByPart = $allUserAnswers->groupBy('question.questionGroup.part')->sortKeys();
+
+        $numCorrectAnswerByPart = [];
+
+        foreach ($answersByPart as $part => $answers) {
+            $numCorrect = $answers->filter(function ($userAnswer) {
+                return $userAnswer->is_correct;
+            })->count();
+
+            $total = $answers->count();
+
+            $numCorrectAnswerByPart[$part] = [
+                'numCorrect' => $numCorrect,
+                'total' => $total,
+            ];
+        }
+
+        return $numCorrectAnswerByPart;
+    }
+
+    public function getAttempts($userId, $options = [])
+    {
+        $limit = $options['limit'] ?? 10;
+        $offset = $options['offset'] ?? 0;
+
+        $attempts = ToeicTestAttempt::with(['toeicTest', 'userAnswers'])
+            ->where('user_id', $userId)
+            ->orderBy('created_at', 'desc')
+            ->limit($limit)
+            ->offset($offset);
+
+        if (isset($options['recent_days'])) {
+            $attempts->where('created_at', '>=', now()->subDays($options['recent_days']));
+        }
+
+        if (isset($options['toeic_test_id'])) {
+            $attempts->where('toeic_test_id', $options['toeic_test_id']);
+        }
+
+        $attempts = $attempts->get();
+
+        $attempts->each(function ($attempt) {
+            $attempt->append(['num_of_correct_answers', 'total_questions']);
+        });
+
+        return $attempts;
+    }
+
+
+    public function getAttemptStatsOfUser($userId, $recentDays = 7)
+    {
+        $attempts = ToeicTestAttempt::with('userAnswers.question.questionGroup', 'userAnswers.attempt')->where('user_id', $userId)
+            ->where('created_at', '>=', now()->subDays($recentDays))
+            ->get();
+
+        $lcMaxScore = $attempts->max('listening_score');
+        $rcMaxScore = $attempts->max('reading_score');
+
+        $numberOfPracticeTests = $attempts->pluck('toeic_test_id')->unique()->count();
+        $practiceTime = ceil($attempts->sum('taken_time') / 60); // in minutes
+
+        // Split by skills, only account the attempt that have the user answer in the respective parts of each skill
+        $allUserAnswers = $attempts->pluck('userAnswers')->flatten();
+
+        $lcAnswers = $allUserAnswers->filter(function ($userAnswer) {
+            $part = $userAnswer->question->questionGroup->part;
+            return ToeicPart::isListening($part);
+        });
+
+        $rcAnswers = $allUserAnswers->filter(function ($userAnswer) {
+            $part = $userAnswer->question->questionGroup->part;
+            return ToeicPart::isReading($part);
+        });
+
+        $lcAttempts = $lcAnswers->pluck('attempt')->unique('id');
+        $lcAverageTime = round($lcAttempts->avg('taken_time')); // in seconds
+
+        $lcAnswersByAttempt = $lcAnswers->groupBy('toeic_test_attempt_id');
+        $lcNumOfCorrects = $lcAnswersByAttempt->map(function ($answersOfAttempt) {
+            $numCorrect = $answersOfAttempt->filter(function ($userAnswer) {
+                return $userAnswer->is_correct;
+            })->count();
+
+            return $numCorrect;
+        })->sum();
+
+        $averageNumOfCorrectLc = (int)round($lcNumOfCorrects / $lcAnswersByAttempt->count());
+        $averageLcScore = ToeicHelper::LISTENING_SCORE_MAP[$averageNumOfCorrectLc] ?? 0;
+
+        $rcAttempts = $rcAnswers->pluck('attempt')->unique('id');
+        $rcAverageTime = round($rcAttempts->avg('taken_time')); // in seconds
+
+        $rcAnswersByAttempt = $rcAnswers->groupBy('toeic_test_attempt_id');
+        $rcNumOfCorrects = $rcAnswersByAttempt->map(function ($answersOfAttempt) {
+            $numCorrect = $answersOfAttempt->filter(function ($userAnswer) {
+                return $userAnswer->is_correct;
+            })->count();
+
+            return $numCorrect;
+        })->sum();
+
+        $averageNumOfCorrectRc = (int)round($rcNumOfCorrects / $rcAnswersByAttempt->count());
+        $averageRcScore = ToeicHelper::READING_SCORE_MAP[$averageNumOfCorrectRc] ?? 0;
+
+        $lcPracticeTests = $lcAnswers->pluck('attempt.toeic_test_id')->unique()->count();
+        $rcPracticeTests = $rcAnswers->pluck('attempt.toeic_test_id')->unique()->count();
+
+        $numOfLcAnswers = $lcAnswers->count();
+        $numOfRcAnswers = $rcAnswers->count();
+
+        $numOfCorrectLcAnswers = $lcAnswers->filter(function ($userAnswer) {
+            return $userAnswer->is_correct;
+        })->count();
+
+        $numOfCorrectRcAnswers = $rcAnswers->filter(function ($userAnswer) {
+            return $userAnswer->is_correct;
+        })->count();
+
+        $lcAccuracyByDate = $this->getAccuracyByDateOfAttempts($lcAttempts);
+        $rcAccuracyByDate = $this->getAccuracyByDateOfAttempts($rcAttempts);
+
+        return [
+            'numberOfPracticeTests' => $numberOfPracticeTests,
+            'practiceTime' => $practiceTime,
+            'lc' => [
+                'practiceTests' => $lcPracticeTests,
+                'answers' => $numOfLcAnswers,
+                'correctAnswers' => $numOfCorrectLcAnswers,
+                'maxScore' => $lcMaxScore,
+                'averageScore' => $averageLcScore,
+                'averageTime' => $lcAverageTime,
+                'accuracyByDate' => $lcAccuracyByDate,
+            ],
+            'rc' => [
+                'practiceTests' => $rcPracticeTests,
+                'answers' => $numOfRcAnswers,
+                'correctAnswers' => $numOfCorrectRcAnswers,
+                'maxScore' => $rcMaxScore,
+                'averageScore' => $averageRcScore,
+                'averageTime' => $rcAverageTime,
+                'accuracyByDate' => $rcAccuracyByDate,
+            ],
+            'numOfCorrectAnswersGroupedByPart' => $this->getNumOfCorrectAnswersGroupedByPart($attempts),
+        ];
     }
 }

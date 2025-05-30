@@ -162,8 +162,9 @@ Route::group([
     'middleware' => 'jwt.auth'
 ], function () {
     Route::post('/', [ToeicTestAttemptController::class, 'store']);
-    Route::get('/', [ToeicTestAttemptController::class, 'getAttemptsOfUser']);
+    Route::get('/', [ToeicTestAttemptController::class, 'getAttempts']);
     Route::get('/{attemptId}/details', [ToeicTestAttemptController::class, 'getAttemptDetails']);
+    Route::get('/stats', [ToeicTestAttemptController::class, 'getAttemptStatsOfUser']);
 });
 
 Route::post('/tts', TtsController::class);

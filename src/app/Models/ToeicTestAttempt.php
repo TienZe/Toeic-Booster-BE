@@ -37,4 +37,29 @@ class ToeicTestAttempt extends Model
 
         return $selectedParts === ToeicHelper::ALL_PARTS;
     }
+
+    public function getTotalQuestionsAttribute()
+    {
+        $totalQuestions = 0;
+
+        foreach ($this->selected_parts as $part) {
+            $totalQuestions += ToeicHelper::getNumberOfQuestionsByPart($part);
+        }
+
+        return $totalQuestions;
+    }
+
+    public function getNumOfCorrectAnswersAttribute()
+    {
+        return $this->userAnswers->filter(function ($userAnswer) {
+            return $userAnswer->is_correct;
+        })->count();
+    }
+
+    public function getNumOfIncorrectAnswersAttribute()
+    {
+        return $this->userAnswers->filter(function ($userAnswer) {
+            return !$userAnswer->is_correct;
+        })->count();
+    }
 }
