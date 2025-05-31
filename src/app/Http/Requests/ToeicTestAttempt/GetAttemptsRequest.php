@@ -9,9 +9,9 @@ class GetAttemptsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'recent_days' => 'sometimes|integer',
+            'recent_days' => 'sometimes|string',
             'limit' => 'sometimes|integer',
-            'offset' => 'sometimes|integer',
+            'page' => 'sometimes|integer',
             'toeic_test_id' => 'sometimes|integer',
         ];
     }

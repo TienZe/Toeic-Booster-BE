@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Entities\PaginatedList;
 use App\Enums\ToeicPart;
 use App\Helpers\ToeicHelper;
 use App\Models\Question;
@@ -189,40 +190,61 @@ class ToeicTestAttemptService
     public function getAttempts($userId, $options = [])
     {
         $limit = $options['limit'] ?? 10;
-        $offset = $options['offset'] ?? 0;
+        $page = $options['page'] ?? 1;
 
         $attempts = ToeicTestAttempt::with(['toeicTest', 'userAnswers'])
             ->where('user_id', $userId)
-            ->orderBy('created_at', 'desc')
-            ->limit($limit)
-            ->offset($offset);
+            ->orderBy('created_at', 'desc');
 
         if (isset($options['recent_days'])) {
-            $attempts->where('created_at', '>=', now()->subDays($options['recent_days']));
+            $value = (int)substr($options['recent_days'], 0, strlen($options['recent_days']) - 1);
+            $unit = substr($options['recent_days'], -1);
+
+            if ($unit === 'd') {
+                $startDate = now()->subDays($value);
+            } else if ($unit === 'm') {
+                $startDate = now()->subMonths($value);
+            } else if ($unit === 'y') {
+                $startDate = now()->subYears($value);
+            }
+
+            $attempts->where('created_at', '>=', $startDate);
         }
 
         if (isset($options['toeic_test_id'])) {
             $attempts->where('toeic_test_id', $options['toeic_test_id']);
         }
 
-        $attempts = $attempts->get();
+        $paginatedAttempts = PaginatedList::createFromQueryBuilder($attempts, $page, $limit);
 
-        $attempts->each(function ($attempt) {
+        $paginatedAttempts->items->each(function ($attempt) {
             $attempt->append(['num_of_correct_answers', 'total_questions']);
+            $attempt->makeHidden(['userAnswers']);
         });
 
-        return $attempts;
+        return $paginatedAttempts;
     }
 
 
-    public function getAttemptStatsOfUser($userId, $recentDays = 7)
+    public function getAttemptStatsOfUser($userId, $recentDays = '7d')
     {
+        $value = (int)substr($recentDays, 0, strlen($recentDays) - 1);
+        $unit = substr($recentDays, -1);
+
+        if ($unit === 'd') {
+            $startDate = now()->subDays($value);
+        } else if ($unit === 'm') {
+            $startDate = now()->subMonths($value);
+        } else if ($unit === 'y') {
+            $startDate = now()->subYears($value);
+        }
+
         $attempts = ToeicTestAttempt::with('userAnswers.question.questionGroup', 'userAnswers.attempt')->where('user_id', $userId)
-            ->where('created_at', '>=', now()->subDays($recentDays))
+            ->where('created_at', '>=', $startDate)
             ->get();
 
-        $lcMaxScore = $attempts->max('listening_score');
-        $rcMaxScore = $attempts->max('reading_score');
+        $lcMaxScore = $attempts->max('listening_score') ?? 0;
+        $rcMaxScore = $attempts->max('reading_score') ?? 0;
 
         $numberOfPracticeTests = $attempts->pluck('toeic_test_id')->unique()->count();
         $practiceTime = ceil($attempts->sum('taken_time') / 60); // in minutes
@@ -252,7 +274,7 @@ class ToeicTestAttemptService
             return $numCorrect;
         })->sum();
 
-        $averageNumOfCorrectLc = (int)round($lcNumOfCorrects / $lcAnswersByAttempt->count());
+        $averageNumOfCorrectLc = (int)round($lcNumOfCorrects / max($lcAnswersByAttempt->count(), 1));
         $averageLcScore = ToeicHelper::LISTENING_SCORE_MAP[$averageNumOfCorrectLc] ?? 0;
 
         $rcAttempts = $rcAnswers->pluck('attempt')->unique('id');
@@ -267,7 +289,7 @@ class ToeicTestAttemptService
             return $numCorrect;
         })->sum();
 
-        $averageNumOfCorrectRc = (int)round($rcNumOfCorrects / $rcAnswersByAttempt->count());
+        $averageNumOfCorrectRc = (int)round($rcNumOfCorrects / max($rcAnswersByAttempt->count(), 1));
         $averageRcScore = ToeicHelper::READING_SCORE_MAP[$averageNumOfCorrectRc] ?? 0;
 
         $lcPracticeTests = $lcAnswers->pluck('attempt.toeic_test_id')->unique()->count();
