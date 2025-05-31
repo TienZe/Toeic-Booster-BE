@@ -22,8 +22,8 @@ class PaginatedList extends Entity
         $this->currentPage = (int)$currentPage;
         $this->totalPages = ceil($total / $pageSize);
 
-        $this->hasNext = $currentPage < $this->totalPages;
-        $this->hasPrevious = $currentPage > 1;
+        $this->hasNext = $currentPage < $this->totalPages - 1;
+        $this->hasPrevious = $currentPage > 0;
         $this->nextPage = min($currentPage + 1, $this->totalPages);
         $this->previousPage = max($currentPage - 1, 1);
     }
