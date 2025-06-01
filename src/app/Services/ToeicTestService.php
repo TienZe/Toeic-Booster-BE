@@ -26,6 +26,7 @@ class ToeicTestService
             $toeicTest->fill([
                 'name' => $data['name'] ?? $toeicTest->name,
                 'description' => $data['description'] ?? $toeicTest->description,
+                'toeic_test_category_id' => $data['category'] ?? $toeicTest->toeic_test_category_id,
             ]);
             $toeicTest->save();
 

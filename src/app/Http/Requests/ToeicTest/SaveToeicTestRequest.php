@@ -13,7 +13,8 @@ class SaveToeicTestRequest extends FormRequest
     {
         return [
             'id' => 'sometimes|integer',
-            'name' => 'sometimes|string',
+            'name' => 'required_without:id|string',
+            'category' => 'required_without:id|integer|exists:toeic_test_categories,id',
             'question_groups' => 'sometimes|array',
             'question_groups.*.id' => 'sometimes',
             'question_groups.*.transcript' => 'sometimes|nullable|string',

@@ -19,5 +19,8 @@ class DatabaseSeeder extends Seeder
 
         // Seeds collection tags
         $this->call(CollectionTagSeeder::class);
+
+        // Seeds toeic test categories
+        $this->call(ToeicCategorySeeder::class);
     }
 }

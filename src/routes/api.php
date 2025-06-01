@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CollectionTagController;
 use App\Http\Controllers\LessonLearningController;
+use App\Http\Controllers\ToeicCategoryController;
 use App\Http\Controllers\ToeicChatController;
 use App\Http\Controllers\ToeicTestAttemptController;
 use App\Http\Controllers\ToeicTestController;
@@ -123,6 +124,12 @@ Route::group([
     'prefix' => 'collection-tags',
 ], function () {
     Route::get('/', [CollectionTagController::class, 'index']);
+});
+
+Route::group([
+    'prefix' => 'toeic-categories',
+], function () {
+    Route::get('/', [ToeicCategoryController::class, 'index']);
 });
 
 Route::group([
