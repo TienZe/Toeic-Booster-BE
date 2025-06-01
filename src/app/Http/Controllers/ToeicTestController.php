@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ToeicTest\GetToeicTestsRequest;
 use App\Http\Requests\ToeicTest\SaveToeicTestRequest;
 use App\Services\ToeicTestService;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 class ToeicTestController extends Controller
@@ -44,5 +45,10 @@ class ToeicTestController extends Controller
         $deleted = $this->toeicTestService->deleteToeicTest($id);
 
         return [ "deleted" => $deleted ];
+    }
+
+    public function getMostTakenToeicTests(Request $request)
+    {
+        return $this->toeicTestService->getMostTakenToeicTests($request->limit ?? 8);
     }
 }

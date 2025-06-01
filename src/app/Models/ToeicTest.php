@@ -18,4 +18,9 @@ class ToeicTest extends Model
     {
         return $this->belongsTo(ToeicTestCategory::class, 'toeic_test_category_id');
     }
+
+    public function attempts()
+    {
+        return $this->hasMany(ToeicTestAttempt::class, 'toeic_test_id');
+    }
 }

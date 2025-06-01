@@ -156,4 +156,26 @@ class ToeicTestService
     {
         return ToeicTest::find($id)->delete();
     }
+
+    public function getMostTakenToeicTests($limit = 8)
+    {
+        return ToeicTest::withCount('attempts')
+            ->orderBy('attempts_count', 'desc')
+            ->orderBy('id', 'desc')
+            ->limit($limit)
+            ->get();
+
+        /** Laravel load the count by using co-related sub-query (not efficient)
+         *  SELECT
+         *     `toeic_tests`.*, (
+         *      SELECT
+         *          count(*)
+         *      FROM `toeic_test_attempts`
+         *      WHERE `toeic_tests`.`id` = `toeic_test_attempts`.`toeic_test_id`
+         *  ) AS `attempts_count`
+         *  FROM `toeic_tests`
+         *  ORDER BY `attempts_count` desc, `id` desc
+         *  LIMIT 6;
+         */
+    }
 }

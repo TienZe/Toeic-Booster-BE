@@ -160,6 +160,8 @@ Route::group([
 ], function () {
     Route::post('/', [ToeicTestController::class, 'save']);
     Route::get('/', [ToeicTestController::class, 'index']);
+    Route::get('/most-taken', [ToeicTestController::class, 'getMostTakenToeicTests']);
+
     Route::get('/{id}/info', [ToeicTestController::class, 'getToeicTestInfo']);
     Route::get('/{id}', [ToeicTestController::class, 'show']);
     Route::delete('/{id}', [ToeicTestController::class, 'destroy']);
