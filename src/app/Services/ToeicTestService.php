@@ -134,8 +134,8 @@ class ToeicTestService
             $query->where('name', 'like', '%' . $options['search'] . '%');
         }
 
-        if (isset($options['filtered_tag'])) {
-            // TODO: filter by tag id
+        if (isset($options['filtered_category'])) {
+            $query->where('toeic_test_category_id', $options['filtered_category']);
         }
 
         if (isset($options['with_stats'])) {

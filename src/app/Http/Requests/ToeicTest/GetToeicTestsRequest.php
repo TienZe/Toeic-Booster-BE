@@ -11,8 +11,8 @@ class GetToeicTestsRequest extends FormRequest
         return [
             'page' => 'sometimes|integer|min:0',
             'limit' => 'sometimes|integer|min:1',
-            'search' => 'sometimes|string',
-            'filtered_tag' => 'sometimes|numeric',
+            'search' => 'sometimes|nullable|string',
+            'filtered_category' => 'sometimes|numeric|exists:toeic_test_categories,id',
             'with_stats' => 'sometimes|boolean',
         ];
     }
