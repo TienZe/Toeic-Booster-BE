@@ -67,7 +67,7 @@ async def get_recommendations(
         )
         
         # Paginate by getting the last slice
-        results = results[-request.limit:]
+        results = results[request.page * request.limit:]
     
     # Transform results into response items
     items = []

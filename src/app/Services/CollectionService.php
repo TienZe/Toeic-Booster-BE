@@ -132,11 +132,7 @@ final class CollectionService
         $recommendedCollections = Collection::whereIn('id', $collectionIds)->get();
         $sortedCollections = $this->sortRecommendedCollectionByScore($recommendedCollections, $preferredCollectionItems);
 
-        $collectionCount = Collection::count();
-
-        $paginatedList = new PaginatedList($sortedCollections, $collectionCount, $options['limit'], $options['page']);
-
-        return $paginatedList;
+        return $sortedCollections;
     }
 
     public function getCollectionUserMightAlsoLike($userId, $limit = 8)
