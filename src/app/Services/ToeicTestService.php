@@ -151,4 +151,9 @@ class ToeicTestService
     {
         return ToeicTest::find($id);
     }
+
+    public function deleteToeicTest($id)
+    {
+        return ToeicTest::find($id)->delete();
+    }
 }

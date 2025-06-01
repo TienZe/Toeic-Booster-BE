@@ -162,6 +162,7 @@ Route::group([
     Route::get('/', [ToeicTestController::class, 'index']);
     Route::get('/{id}/info', [ToeicTestController::class, 'getToeicTestInfo']);
     Route::get('/{id}', [ToeicTestController::class, 'show']);
+    Route::delete('/{id}', [ToeicTestController::class, 'destroy']);
 });
 
 Route::group([

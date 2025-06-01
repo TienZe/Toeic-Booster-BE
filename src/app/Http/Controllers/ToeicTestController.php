@@ -38,4 +38,11 @@ class ToeicTestController extends Controller
     {
         return $this->toeicTestService->getToeicTestInfo($id);
     }
+
+    public function destroy($id)
+    {
+        $deleted = $this->toeicTestService->deleteToeicTest($id);
+
+        return [ "deleted" => $deleted ];
+    }
 }
