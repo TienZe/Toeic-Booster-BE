@@ -41,7 +41,7 @@ Do not provide any information outside of that context, even if I ask.
 Keep your answers concise.";
 
         $prompt = $systemInstruction;
-        $prompt .= "\n\nCâu hỏi số $question->question_number - Part $partNumber: $question->question";
+        $prompt .= "\n\nQuestion number $question->question_number - Part $partNumber: $question->question";
 
         $prompt .= "\nA. " . $question->A;
         $prompt .= "\nB. " . $question->B;
@@ -51,16 +51,16 @@ Keep your answers concise.";
             $prompt .= "\nD. " . $question->D;
         }
 
-        $prompt .= "\n\nĐáp án đúng là: " . $question->correct_answer;
+        $prompt .= "\n\nThe correct answer is: " . $question->correct_answer;
 
-        $prompt .= "\n\nGiải thích: " . $question->explanation;
+        $prompt .= "\n\nExplanation: " . $question->explanation;
 
         if ($questionGroup->transcript) {
             $prompt .= "\n\nTranscript: " . $questionGroup->transcript;
         }
 
         if ($questionGroup->passage) {
-            $prompt .= "\n\nĐoạn văn: " . $questionGroup->passage;
+            $prompt .= "\n\nPassage: " . $questionGroup->passage;
         }
 
         $images = $questionGroup->medias->filter(function ($media) {

@@ -221,8 +221,8 @@ final class CollectionService
      */
     public function fetchPreferredCollectionIds($collectionWeights, $options)
     {
-        $filterTitle = $options['filter_title'] ?? null;
-        $filterCategories = $options['filter_categories'] ?? null;
+        $filterTitle = !empty($options['filter_title']) ? $options['filter_title'] : null;
+        $filterCategories = !empty($options['filter_categories']) ? $options['filter_categories'] : null;
         $limit = $options['limit'] ?? 10;
         $page = $options['page'] ?? 0;
 
