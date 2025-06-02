@@ -2,11 +2,17 @@
 
 namespace App\Services;
 
+use App\Entities\GeneratedWord;
 use App\Enums\MediaFileType;
+use App\Enums\PartOfSpeech;
 use App\Models\Question;
 use Gemini\Data\Blob;
 use Gemini\Data\Content;
+use Gemini\Data\GenerationConfig;
+use Gemini\Data\Schema;
+use Gemini\Enums\DataType;
 use Gemini\Enums\MimeType;
+use Gemini\Enums\ResponseMimeType;
 use Gemini\Enums\Role;
 use Gemini\Laravel\Facades\Gemini;
 
@@ -97,5 +103,44 @@ If asked about model information, respond with: 'Tôi được huấn luyện b�
         $parts = $result->parts();
 
         return new Content($parts, Role::MODEL);
+    }
+
+    public static function generateStructuredOutput($schemaProperties, $prompt)
+    {
+        $result = Gemini::generativeModel(model: 'gemini-2.0-flash')
+            ->withGenerationConfig(
+                generationConfig: new GenerationConfig(
+                    responseMimeType: ResponseMimeType::APPLICATION_JSON,
+                    responseSchema: new Schema(
+                        type: DataType::OBJECT,
+                        properties: $schemaProperties,
+                    )
+                )
+            )
+            ->generateContent($prompt);
+
+        return $result->json();
+    }
+
+    public static function generateWord(GeneratedWord $baseWord): GeneratedWord
+    {
+        $schemaProperties = [
+            'word' => new Schema(type: DataType::STRING, example: 'hello'),
+            'definition' => new Schema(type: DataType::STRING, example: 'an expression of greeting'),
+            'meaning' => new Schema(type: DataType::STRING, example: 'xin chào', description: 'Meaning in Vietnamese, short and concise'),
+            'pronunciation' => new Schema(type: DataType::STRING, example: '/həˈloʊ/'),
+            'example' => new Schema(type: DataType::STRING, example: 'Hello, how are you?', description: 'Example in English. About 10 - 15 words.'),
+            'exampleMeaning' => new Schema(type: DataType::STRING, example: 'Xin chào, bạn có khoẻ không?', description: 'Meaning of the example in Vietnamese'),
+            'partOfSpeech' => new Schema(type: DataType::STRING, enum: PartOfSpeech::values(), example: 'noun', description: 'Part of speech of the word'),
+        ];
+
+        $prompt = "You are EN - VI dictionary. Just fill in the missing information for the word in English except `meaning` and `exampleMeaning`: " . json_encode($baseWord);
+
+        $result = self::generateStructuredOutput($schemaProperties, $prompt);
+
+        $generatedWord = new GeneratedWord();
+        $generatedWord->fromArray((array)$result);
+
+        return $generatedWord;
     }
 }

@@ -35,7 +35,7 @@ class LessonVocabularyController extends Controller
     public function store(BulkStoreLessonVocabularyRequest $request, $lessonId)
     {
         $validated = $request->validated();
-        $created = $this->lessonVocabularyService->bulkStore($lessonId,$validated['words']);
+        $created = $this->lessonVocabularyService->bulkStore($lessonId, $validated['words']);
 
         return $created;
     }

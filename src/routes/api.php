@@ -1,5 +1,6 @@
 <?php
 
+use App\Entities\GeneratedWord;
 use App\Http\Controllers\CollectionTagController;
 use App\Http\Controllers\LessonLearningController;
 use App\Http\Controllers\ToeicCategoryController;
@@ -191,5 +192,17 @@ Route::group([
 ], function () {
     Route::get('/prompt-instruction/{questionId}', function ($questionId) {
         return response()->json(GeminiChatBotService::createInstructionFromQuestion($questionId));
+    });
+
+    Route::get('/generate-word', function () {
+        $baseWord = new GeneratedWord();
+        $baseWord->word = 'expand';
+        // $baseWord->definition = 'an expression of greeting';
+        // $baseWord->meaning = 'xin chào';
+        // $baseWord->pronunciation = '/həˈloʊ/';
+        $baseWord->partOfSpeech = 'verb';
+        $baseWord->example = "You can expand this compact umbrella to cover a large table.";
+
+        return response()->json(GeminiChatBotService::generateWord($baseWord));
     });
 });

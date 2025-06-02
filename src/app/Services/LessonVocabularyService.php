@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Entities\GeneratedWord;
 use App\Models\LessonVocabulary;
 use App\Repositories\LessonVocabularyRepository;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
@@ -29,9 +30,20 @@ class LessonVocabularyService
                 // Upload media files
                 // ...
 
+                $basedWord = new GeneratedWord();
+                $basedWord->fromArray($item);
+
+                $generatedWord = GeminiChatBotService::generateWord($basedWord);
+
                 $created[] = LessonVocabulary::create([
                     'lesson_id' => $lessonId,
-                    ...$item
+                    'word' => $generatedWord->word,
+                    'definition' => $generatedWord->definition,
+                    'meaning' => $generatedWord->meaning,
+                    'pronunciation' => $generatedWord->pronunciation,
+                    'example' => $generatedWord->example,
+                    'example_meaning' => $generatedWord->exampleMeaning,
+                    'part_of_speech' => $generatedWord->partOfSpeech,
                 ]);
             }
         });
@@ -110,7 +122,7 @@ class LessonVocabularyService
             "id" => $lessonVocabulary->id,
             "lesson_id" => $lessonVocabulary->lesson_id,
             "vocabulary_id" => $lessonVocabulary->vocabulary_id,
-            "word" => $defaultVocabulary?->word,
+            "word" => $defaultVocabulary?->word ?? $lessonVocabulary->word,
             "thumbnail" => $lessonVocabulary->thumbnail ?? $defaultVocabulary?->thumbnail,
             "part_of_speech" => $lessonVocabulary->part_of_speech ?? $defaultVocabulary?->part_of_speech,
             "meaning" => $lessonVocabulary->meaning ?? $defaultVocabulary?->meaning,

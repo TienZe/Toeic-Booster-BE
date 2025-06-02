@@ -12,7 +12,8 @@ final class BulkStoreLessonVocabularyRequest extends FormRequest
     {
         return [
             'words' => 'required|array',
-            'words.*.vocabulary_id' => 'required|integer',
+            'words.*.word' => 'sometimes|string',
+            'words.*.vocabulary_id' => 'sometimes|nullable|integer',
             'words.*.thumbnail' => 'nullable|string',
             'words.*.part_of_speech' => 'nullable|string',
             'words.*.meaning' => 'nullable|string',
