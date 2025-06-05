@@ -1,27 +1,35 @@
 version: "3.8"
 
+networks:
+  app-network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+      - subnet: 22.22.23.0/24
+
+
 services:
-  server:
+  toeic_server:
     build:
       context: ./
       dockerfile: server/Dockerfile
-    container_name: toeic_server
     volumes:
       - ./src:/srv/src
       - ./server/etc/apache2/sites-enabled/default.conf:/etc/apache2/sites-enabled/000-default.conf
-      - ./server/php/conf.d/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
-      - ./xdebug-artifacts:/tmp/xdebug-artifacts
-      - ./xdebug-artifacts/xdebug.log:/var/log/xdebug.log
+      # - ./server/php/conf.d/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+      # - ./xdebug-artifacts:/tmp/xdebug-artifacts
+      # - ./xdebug-artifacts/xdebug.log:/var/log/xdebug.log
     ports:
       - "3001:80"
     depends_on:
-      - db
+      - toeic_db
     networks:
       - app-network
 
-  db:
+  toeic_db:
     image: mysql:8
-    container_name: mysql_db
+    container_name: toeic_db
     # restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: root
@@ -35,8 +43,7 @@ services:
     networks:
       - app-network
 
-  recommendation:
-    container_name: toeic_recommendation
+  toeic_recommendation:
     build:
       context: ./recommendation
       dockerfile: Dockerfile
@@ -46,10 +53,23 @@ services:
       - "8000:8000"
     networks:
       - app-network
+  
+  toeic_proxy:
+    build:
+      context: ./proxy
+      dockerfile: Dockerfile
+    ports:
+      - "443:443"
+      - "80:80"
+    volumes:
+      - ./proxy/nginx.conf:/etc/nginx/nginx.conf
+      - ./proxy/ssl:/etc/nginx/ssl
+    depends_on:
+      - toeic_server
+      - toeic_recommendation
+    networks:
+      - app-network
 
 volumes:
   db-data:
 
-networks:
-  app-network:
-    driver: bridge

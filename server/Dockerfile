@@ -17,9 +17,15 @@ COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
 # Enable Apache modules
 RUN a2enmod rewrite headers
 
-RUN pecl install xdebug
+# RUN pecl install xdebug
 
 # Copy the application files
 COPY ./src /srv/src
 
 WORKDIR /srv/src
+
+RUN composer install
+
+# Grant write permission to user www-data of apache2
+RUN chown -R www-data:www-data storage bootstrap/cache
+RUN chmod -R 775 storage bootstrap/cache
