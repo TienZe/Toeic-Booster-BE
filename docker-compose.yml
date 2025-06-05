@@ -11,6 +11,7 @@ networks:
 
 services:
   toeic_server:
+    container_name: toeic_server
     build:
       context: ./
       dockerfile: server/Dockerfile
@@ -44,6 +45,7 @@ services:
       - app-network
 
   toeic_recommendation:
+    container_name: toeic_recommendation
     build:
       context: ./recommendation
       dockerfile: Dockerfile
@@ -55,6 +57,7 @@ services:
       - app-network
   
   toeic_proxy:
+    container_name: toeic_proxy
     build:
       context: ./proxy
       dockerfile: Dockerfile
