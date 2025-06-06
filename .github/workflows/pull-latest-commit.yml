@@ -19,7 +19,8 @@ jobs:
           script: |
             echo "🚚 ==> Pulling latest code"
             cd ~/toeic-booster/Toeic-Booster-BE
-            git pull origin main
+            git fetch origin main
+            git reset --hard origin/main
 
             echo "🔧 ==> Installing dependencies of laravel application"
             docker exec -it toeic_server composer install

@@ -1,0 +1,1 @@
+docker exec -it toeic_proxy bash -c "certbot renew"

@@ -66,7 +66,7 @@ services:
       - "80:80"
     volumes:
       - ./proxy/nginx.conf:/etc/nginx/nginx.conf
-      - ./proxy/ssl:/etc/letsencrypt/live/toeicbooster.io.vn
+      - ./proxy/ssl:/etc/letsencrypt
     depends_on:
       - toeic_server
       - toeic_recommendation
