@@ -6,3 +6,4 @@ RUN apt update && \
 
 # Create directories
 RUN mkdir -p /var/www/certbot
+RUN mkdir -p /etc/letsencrypt/live/toeicbooster.io.vn

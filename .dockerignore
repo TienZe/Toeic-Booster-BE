@@ -1,0 +1,21 @@
+
+# Laravel
+vendor
+.env
+.env.backup
+.phpunit.result.cache
+public/storage
+storage/*.key
+
+# Node
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Logs
+*.log
+
+# Testing artifacts
+coverage
+phpunit.xml
+tests
