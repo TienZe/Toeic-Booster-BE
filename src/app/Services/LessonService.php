@@ -132,6 +132,13 @@ class LessonService
 
         $lessons = $lessons->get();
 
+        // Append reserved_thumbnail attribute
+        $lessons->load(['firstLessonVocabulary.vocabulary']);
+        $lessons->each(function ($lesson) {
+            $lesson->append(['reserved_thumbnail']);
+            $lesson->makeHidden(['firstLessonVocabulary']);
+        });
+
         if ($withUserLearningProgress) {
             foreach ($lessons as $lesson) {
                 // Set learning step for each lesson

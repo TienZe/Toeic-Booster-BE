@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Helpers\BingImageHelper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -34,9 +35,10 @@ class Lesson extends Model
         return $this->hasMany(LessonVocabulary::class);
     }
 
-    public function getNumOfWordsAttribute(): int
+    // Utility relation to get the first vocabulary of the lesson
+    public function firstLessonVocabulary()
     {
-        return $this->lessonVocabularies()->count();
+        return $this->hasOne(LessonVocabulary::class)->orderBy('id');
     }
 
     public function lessonLearnings()
@@ -47,5 +49,38 @@ class Lesson extends Model
     public function lessonExams()
     {
         return $this->hasMany(LessonExam::class);
+    }
+
+    public function getNumOfWordsAttribute(): int
+    {
+        return $this->lessonVocabularies()->count();
+    }
+
+    public function getReservedThumbnailAttribute()
+    {
+        // Pls eager load before using this attribute to avoid N+1 query problem
+        $lessonVoca = $this->firstLessonVocabulary;
+        if (!$lessonVoca) {
+            return null;
+        }
+
+        if ($lessonVoca->thumbnail) {
+            return $lessonVoca->thumbnail;
+        }
+
+        $systemWord = $lessonVoca->vocabulary;
+        if ($systemWord) {
+            if ($systemWord->thumbnail) {
+                return $systemWord->thumbnail;
+            }
+
+            $keyword = $lessonVoca->word ?? $systemWord->word;
+
+            if ($keyword) {
+                return BingImageHelper::getBingImageByKeyword($keyword);
+            }
+        }
+
+        return null;
     }
 }

@@ -8,9 +8,16 @@ class WordFolderService
 {
     public function getWordFolders($ownerUserId)
     {
-        return Lesson::where('user_id', $ownerUserId)
+        $lessons = Lesson::with('firstLessonVocabulary.vocabulary')
+            ->where('user_id', $ownerUserId)
             ->orderBy('created_at', 'desc')
             ->get();
+
+        $lessons->each(function ($lesson) {
+            $lesson->append(['reserved_thumbnail']);
+        });
+
+        return $lessons;
     }
 
     public function createWordFolder($ownerUserId, array $data)
