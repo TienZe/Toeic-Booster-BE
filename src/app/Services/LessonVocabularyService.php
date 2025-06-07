@@ -8,6 +8,7 @@ use App\Repositories\LessonVocabularyRepository;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class LessonVocabularyService
 {
@@ -30,25 +31,48 @@ class LessonVocabularyService
                 // Upload media files
                 // ...
 
-                $basedWord = new GeneratedWord();
-                $basedWord->fromArray($item);
+                if (isset($item['vocabulary_id'])) {
+                    // Attach system word
+                    $created[] = $this->attachSystemVocabulary($lessonId, $item['vocabulary_id']);
+                } else {
+                    // Create own vocabulary of lesson
+                    $basedWord = new GeneratedWord();
+                    $basedWord->fromArray($item);
 
-                $generatedWord = GeminiChatBotService::generateWord($basedWord);
+                    $generatedWord = GeminiChatBotService::generateWord($basedWord);
 
-                $created[] = LessonVocabulary::create([
-                    'lesson_id' => $lessonId,
-                    'word' => $generatedWord->word,
-                    'definition' => $generatedWord->definition,
-                    'meaning' => $generatedWord->meaning,
-                    'pronunciation' => $generatedWord->pronunciation,
-                    'example' => $generatedWord->example,
-                    'example_meaning' => $generatedWord->exampleMeaning,
-                    'part_of_speech' => $generatedWord->partOfSpeech,
-                ]);
+                    $created[] = LessonVocabulary::create([
+                        'lesson_id' => $lessonId,
+                        'word' => $generatedWord->word,
+                        'definition' => $generatedWord->definition,
+                        'meaning' => $generatedWord->meaning,
+                        'pronunciation' => $generatedWord->pronunciation,
+                        'example' => $generatedWord->example,
+                        'example_meaning' => $generatedWord->exampleMeaning,
+                        'part_of_speech' => $generatedWord->partOfSpeech,
+                    ]);
+                }
+
             }
         });
 
         return $created;
+    }
+
+    public function attachSystemVocabulary($lessonId, $vocabularyId)
+    {
+        $lessonVoca = LessonVocabulary::where('lesson_id', $lessonId)
+            ->where('vocabulary_id', $vocabularyId)
+            ->first();
+
+        if ($lessonVoca) {
+            throw ValidationException::withMessages(['vocabulary_id' => ["The word has already been attached to this folder"]]);
+        }
+
+        return LessonVocabulary::create([
+            'lesson_id' => $lessonId,
+            'vocabulary_id' => $vocabularyId
+        ]);
     }
 
     public function getLessonVocabularies($lessonId, $options = [])
