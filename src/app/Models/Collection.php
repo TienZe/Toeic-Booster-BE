@@ -15,7 +15,6 @@ class Collection extends Model
     protected $guarded = [];
     protected $with = ['tags'];
 
-
     const THUMBNAIL_FOLDER = 'collection_thumbnails';
 
     /**
@@ -37,5 +36,16 @@ class Collection extends Model
     public function ratings(): HasMany
     {
         return $this->hasMany(CollectionRating::class);
+    }
+
+    public function getNumOfTakenStudentsAttribute()
+    {
+        // always eager load before using this attr to avoid N+1 query problem
+        $students = $this->lessons->flatMap(function ($lesson) {
+            return $lesson->lessonLearnings->pluck('user_id');
+        })->unique();
+
+
+        return $students->count();
     }
 }

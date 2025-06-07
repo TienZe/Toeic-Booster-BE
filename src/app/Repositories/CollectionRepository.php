@@ -31,9 +31,18 @@ class CollectionRepository
 
         if (isset($options['with_stats']) && $options['with_stats']) {
             $query->withCount('lessons');
+
+            $query->with('lessons.lessonLearnings');
         }
 
-        return PaginatedList::createFromQueryBuilder($query, $options["page"] ?? 0, $options["limit"] ?? 10);
+        $paginatedList = PaginatedList::createFromQueryBuilder($query, $options["page"] ?? 0, $options["limit"] ?? 10);
+
+        $paginatedList->items->each(function (Collection $collection) {
+            $collection->append(['num_of_taken_students']);
+            $collection->makeHidden(['lessons']);
+        });
+
+        return $paginatedList;
     }
 
     /**
