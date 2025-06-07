@@ -29,7 +29,8 @@ class CollectionRepository
             });
         }
 
-        if (isset($options['with_stats']) && $options['with_stats']) {
+        $withStats = isset($options['with_stats']) && $options['with_stats'];
+        if ($withStats) {
             $query->withCount('lessons');
 
             $query->with('lessons.lessonLearnings');
@@ -37,10 +38,12 @@ class CollectionRepository
 
         $paginatedList = PaginatedList::createFromQueryBuilder($query, $options["page"] ?? 0, $options["limit"] ?? 10);
 
-        $paginatedList->items->each(function (Collection $collection) {
-            $collection->append(['num_of_taken_students']);
-            $collection->makeHidden(['lessons']);
-        });
+        if ($withStats) {
+            $paginatedList->items->each(function (Collection $collection) {
+                $collection->append(['num_of_taken_students']);
+                $collection->makeHidden(['lessons']);
+            });
+        }
 
         return $paginatedList;
     }

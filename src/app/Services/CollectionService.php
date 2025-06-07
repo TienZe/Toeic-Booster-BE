@@ -117,6 +117,21 @@ final class CollectionService
         return $score;
     }
 
+    /**
+     * Get recommended collections.
+     *
+     * @param array{
+     *     filter_title?: string|null,
+     *     filter_categories?: array|null,
+     *     page?: int,
+     *     limit?: int
+     * } $options  Optional filters and pagination options:
+     *   - filter_title: (string|null) Filter by collection title.
+     *   - filter_categories: (array|null) Filter by category IDs.
+     *   - page: (int) Page number for pagination (0-based).
+     *   - limit: (int) Number of items per page.
+     * @return EloquentCollection<int, Collection>
+     */
     public function getRecommendedCollections($options = [])
     {
         $loggedInUserId = auth()->id();
@@ -125,6 +140,13 @@ final class CollectionService
         $options['page'] = $options['page'] ?? 0;
 
         $collectionWeightArr = $this->getUserCollectionWeightArray($loggedInUserId);
+
+        if (empty($collectionWeightArr)) {
+            // If there are no collection weights, that means user doesn't have any rated or learned collections
+            // So just browser (filter, search) based on the most taken collections
+            return $this->getMostTakenCollections($options);
+        }
+
         $preferredCollectionItems =$this->fetchPreferredCollectionIds($collectionWeightArr, $options);
 
         $collectionIds = array_column($preferredCollectionItems, 'id');
@@ -133,6 +155,34 @@ final class CollectionService
         $sortedCollections = $this->sortRecommendedCollectionByScore($recommendedCollections, $preferredCollectionItems);
 
         return $sortedCollections;
+    }
+
+    public function getMostTakenCollections($options)
+    {
+        $limit = $options['limit'] ?? 10;
+        $page = $options['page'] ?? 0;
+
+        $query = Collection::from('collections as c')
+            ->leftJoin('lessons as l', 'c.id', '=', 'l.collection_id')
+            ->leftJoin('lesson_learnings as ll', 'l.id', '=', 'll.lesson_id')
+            ->groupBy('c.id')
+            ->selectRaw('c.*, COUNT(DISTINCT ll.user_id) as taken_students')
+            ->orderByDesc('taken_students')
+            ->orderByDesc('c.id') # for consistent order for pagination
+            ->limit($limit)
+            ->offset($page * $limit);
+
+        if (isset($options['filter_title'])) {
+            $query->where('c.name', 'like', '%' . $options['filter_title'] . '%');
+        }
+
+        if (isset($options['filter_categories'])) {
+            $query->leftJoin('collection_collection_tag as cct', 'c.id', '=', 'cct.collection_id')
+                ->leftJoin('collection_tags as ct', 'cct.collection_tag_id', '=', 'ct.id')
+                ->whereIn('ct.tag_name', $options['filter_categories']);
+        }
+
+        return $query->get();
     }
 
     public function getCollectionUserMightAlsoLike($userId, $limit = 8)
@@ -144,6 +194,14 @@ final class CollectionService
         // 1. Get preferred collection, because the learned collections can be in the response, so just increase the limit
         // and then apply the filter and limit the response again
         $collectionWeightArr = $this->getUserCollectionWeightArray($userId);
+
+        if (empty($collectionWeightArr)) {
+            // If there are no collection weights, just return the most taken collections
+            return $this->getMostTakenCollections([
+                'limit' => $limit
+            ]);
+        }
+
         $preferredCollectionItems = collect($this->fetchPreferredCollectionIds($collectionWeightArr, [
             'limit' => $limit + $numberOfLearned
         ]));
@@ -180,7 +238,7 @@ final class CollectionService
      */
     private function getUserCollectionWeightArray($userId)
     {
-        $collectionWeights = [];
+        $collectionWeights = []; // map collection id to its weight (score)
 
         // 1. Compute weight of collections rated by user
         $ratedCollections =Collection::whereHas('ratings', function($query) use ($userId) {
@@ -221,6 +279,10 @@ final class CollectionService
      */
     public function fetchPreferredCollectionIds($collectionWeights, $options)
     {
+        if (empty($collectionWeights)) {
+            throw new \InvalidArgumentException("Collection weights can not be empty");
+        }
+
         $filterTitle = !empty($options['filter_title']) ? $options['filter_title'] : null;
         $filterCategories = !empty($options['filter_categories']) ? $options['filter_categories'] : null;
         $limit = $options['limit'] ?? 10;
@@ -243,7 +305,7 @@ final class CollectionService
             $statusCode = $response->status();
             $errorData = $response->json();
 
-            throw new \Exception("Failed to fetch preferred collection ids: $statusCode, $errorData");
+            throw new \Exception("Failed to fetch preferred collection ids with status code $statusCode, error data $errorData");
         }
 
         $data = $response->json();
