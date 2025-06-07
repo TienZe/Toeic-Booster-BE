@@ -32,20 +32,10 @@ class CollectionRepository
         $withStats = isset($options['with_stats']) && $options['with_stats'];
         if ($withStats) {
             $query->withCount('lessons');
-
-            $query->with('lessons.lessonLearnings');
+            $query->withStudentCount(); // Using our new scope
         }
 
-        $paginatedList = PaginatedList::createFromQueryBuilder($query, $options["page"] ?? 0, $options["limit"] ?? 10);
-
-        if ($withStats) {
-            $paginatedList->items->each(function (Collection $collection) {
-                $collection->append(['num_of_taken_students']);
-                $collection->makeHidden(['lessons']);
-            });
-        }
-
-        return $paginatedList;
+        return PaginatedList::createFromQueryBuilder($query, $options["page"] ?? 0, $options["limit"] ?? 10);
     }
 
     /**
