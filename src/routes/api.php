@@ -44,6 +44,13 @@ Route::group([
 });
 
 Route::group([
+    'prefix' => 'users',
+    'middleware' => 'admin'
+], function () {
+    Route::get('/', [UserController::class, 'getUsers']);
+});
+
+Route::group([
     'prefix' => 'collections',
     // 'middleware' => 'jwt.auth'
 ], function () {

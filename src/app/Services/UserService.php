@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Entities\PaginatedList;
+use App\Models\Role;
 use App\Models\User;
 use App\Repositories\UserRepository;
 use App\Services\AuthService;
@@ -35,10 +37,44 @@ class UserService
 
             // Delete the old avatar
             if ($user->avatar_public_id) {
-                $response =Cloudinary::uploadApi()->destroy($user->avatar_public_id);
+                $response = Cloudinary::uploadApi()->destroy($user->avatar_public_id);
             }
         }
 
         return $this->userRepository->updateUser($user->id, $data);
+    }
+
+    /**
+     * Get registered users
+     *
+     * @param array{
+     *     page?: int,
+     *     limit?: int
+     * } $options
+     */
+    public function getUsers($options = [])
+    {
+        $limit = $options['limit'] ?? 10;
+        $page = $options['page'] ?? 0;
+        $search = $options['search'] ?? null;
+        $filteredStatus = $options['filtered_status'] ?? null;
+
+        $query = User::where(function ($query) {
+            $query->whereHas('roles', function ($query) {
+                $query->where('name', '!=', Role::ADMIN);
+            });
+        })->orWhereDoesntHave('roles')
+            ->orderByDesc('created_at');
+
+        if (isset($search)) {
+            $query->where('name', 'like', '%' . $search . '%')
+                ->orWhere('email', 'like', '%' . $search . '%');
+        }
+
+        if (isset($filteredStatus)) {
+            $query->where('status', $filteredStatus);
+        }
+
+        return PaginatedList::createFromQueryBuilder($query, $page, $limit);
     }
 }
