@@ -34,6 +34,16 @@ class LessonVocabularyService
                 if (isset($item['vocabulary_id'])) {
                     // Attach system word
                     $created[] = $this->attachSystemVocabulary($lessonId, $item['vocabulary_id']);
+                } else if (isset($item['lesson_vocabulary_id'])) {
+                    // Currently, the pin word feature only apply for system word, just retrieve the vocabulary_id of the post lesson vocabulary
+                    // In the future, we can expand this feat by replicate the post lesson vocabulary to the current lesson
+                    $vocabulary = LessonVocabulary::with('vocabulary')->find($item['lesson_vocabulary_id'])?->vocabulary;
+
+                    if (!$vocabulary) {
+                        throw new \Exception('Vocabulary not found');
+                    }
+
+                    $created[] = $this->attachSystemVocabulary($lessonId, $vocabulary->id);
                 } else {
                     // Create own vocabulary of lesson
                     $basedWord = new GeneratedWord();
@@ -50,6 +60,8 @@ class LessonVocabularyService
                         'example' => $generatedWord->example,
                         'example_meaning' => $generatedWord->exampleMeaning,
                         'part_of_speech' => $generatedWord->partOfSpeech,
+
+                        'pronunciation_audio' => $item['pronunciation_audio'] ?? null,
                     ]);
                 }
 

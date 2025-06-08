@@ -23,6 +23,7 @@ final class BulkStoreLessonVocabularyRequest extends FormRequest
             'words.*.example' => 'nullable|string',
             'words.*.example_meaning' => 'nullable|string',
             'words.*.example_audio' => 'nullable|string',
+            'words.*.lesson_vocabulary_id' => 'sometimes|integer',
         ];
     }
 }
