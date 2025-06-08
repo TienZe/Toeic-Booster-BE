@@ -23,9 +23,9 @@ class UserService
      * @param array<string, mixed> $data
      * @return \App\Models\User
      */
-    public function updateProfile(array $data): User
+    public function updateProfile($userId, array $data): User
     {
-        $user = $this->authService->getAuthenticatedUser();
+        $user = User::findOrFail($userId);
 
         if (!empty($data['avatar'])) {
             $avatar = Cloudinary::uploadApi()->upload($data['avatar'], [
@@ -76,5 +76,31 @@ class UserService
         }
 
         return PaginatedList::createFromQueryBuilder($query, $page, $limit);
+    }
+
+    public function updateUser($userId, $data)
+    {
+        $profileData = [];
+
+        if (isset($data['name'])) {
+            $profileData['name'] = $data['name'];
+        }
+
+        if (isset($data['avatar'])) {
+            $profileData['avatar'] = $data['avatar'];
+        }
+
+        if (isset($data['status'])) {
+            $profileData['status'] = $data['status'];
+        }
+
+        $updatedUser = $this->updateProfile($userId, $profileData);
+
+        if (isset($data['new_password'])) {
+            $updatedUser->password = $this->authService->generateHashPassword($data['new_password']);
+            $updatedUser->save();
+        }
+
+        return $updatedUser;
     }
 }

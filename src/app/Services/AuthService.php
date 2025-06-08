@@ -25,6 +25,7 @@ class AuthService
      */
     public function register(array $data)
     {
+        $data['password'] = $this->generateHashPassword($data['password']);
         $user = $this->authRepository->createUser($data);
         return $user;
     }
@@ -106,5 +107,10 @@ class AuthService
     public function verifyPassword(User $user, string $password): bool
     {
         return Hash::check($password, $user->password);
+    }
+
+    public function generateHashPassword($password)
+    {
+        return Hash::make($password);
     }
 }

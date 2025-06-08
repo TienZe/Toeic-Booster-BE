@@ -44,10 +44,11 @@ Route::group([
 });
 
 Route::group([
-    'prefix' => 'users',
+    'prefix' => 'admin/users',
     'middleware' => 'admin'
 ], function () {
     Route::get('/', [UserController::class, 'getUsers']);
+    Route::put('/{id}', [UserController::class, 'updateUser']);
 });
 
 Route::group([

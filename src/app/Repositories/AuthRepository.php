@@ -3,7 +3,6 @@
 namespace App\Repositories;
 
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
 
 class AuthRepository
 {
@@ -28,10 +27,7 @@ class AuthRepository
     public function createUser(array $data): User
     {
         try {
-            $password = Hash::make($data['password']);
-
             $user = new User($data);
-            $user->password = $password;
             $user->save();
             $user->refresh();
 

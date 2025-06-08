@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\User\GetPaginatedUsersRequest;
 use App\Http\Requests\User\UpdateProfileRequest;
+use App\Http\Requests\User\UpdateUserRequest;
 use App\Services\UserService;
 
 class UserController extends Controller
@@ -18,12 +19,17 @@ class UserController extends Controller
      */
     public function updateProfile(UpdateProfileRequest $request)
     {
-        $user = $this->userService->updateProfile($request->validated());
+        $user = $this->userService->updateProfile($request->user()->id, $request->validated());
         return $user;
     }
 
     public function getUsers(GetPaginatedUsersRequest $request)
     {
         return $this->userService->getUsers($request->validated());
+    }
+
+    public function updateUser(UpdateUserRequest $request, $id)
+    {
+        return $this->userService->updateUser($id, $request->validated());
     }
 }
