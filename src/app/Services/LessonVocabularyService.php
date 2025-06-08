@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Entities\GeneratedWord;
 use App\Models\LessonVocabulary;
+use App\Models\Vocabulary;
 use App\Repositories\LessonVocabularyRepository;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Support\Facades\Auth;
@@ -143,6 +144,62 @@ class LessonVocabularyService
         }
 
         return $lessonVocabulary->delete();
+    }
+
+    public function updateLessonVocabulary($lessonVocabularyId, $data)
+    {
+        /**
+         * @var LessonVocabulary
+         */
+        $lessonVocabulary = LessonVocabulary::findOrFail($lessonVocabularyId);
+
+        // Handle thumbnail upload if provided
+        if (!empty($data['thumbnail'])) {
+            $thumbnail = Cloudinary::uploadApi()->upload($data['thumbnail'], [
+                "folder" => Vocabulary::THUMBNAIL_FOLDER,
+            ]);
+
+            $data['thumbnail'] = $thumbnail['secure_url'];
+            $data['thumbnail_public_id'] = $thumbnail['public_id'];
+
+            if ($lessonVocabulary->thumbnail_public_id) {
+                Cloudinary::uploadApi()->destroy($lessonVocabulary->thumbnail_public_id);
+            }
+        }
+
+        // Handle pronunciation audio upload if provided
+        if (!empty($data['pronunciation_audio'])) {
+            $pronunciationAudio = Cloudinary::uploadApi()->upload($data['pronunciation_audio'], [
+                "folder" => Vocabulary::PRONUNCIATION_AUDIO_FOLDER,
+                "resource_type" => "auto"
+            ]);
+
+            $data['pronunciation_audio'] = $pronunciationAudio['secure_url'];
+            $data['pronunciation_audio_public_id'] = $pronunciationAudio['public_id'];
+
+            if ($lessonVocabulary->pronunciation_audio_public_id) {
+                Cloudinary::uploadApi()->destroy($lessonVocabulary->pronunciation_audio_public_id);
+            }
+        }
+
+        // Handle example audio upload if provided
+        if (!empty($data['example_audio'])) {
+            $exampleAudio = Cloudinary::uploadApi()->upload($data['example_audio'], [
+                "folder" => Vocabulary::EXAMPLE_AUDIO_FOLDER,
+                "resource_type" => "auto"
+            ]);
+
+            $data['example_audio'] = $exampleAudio['secure_url'];
+            $data['example_audio_public_id'] = $exampleAudio['public_id'];
+
+            if ($lessonVocabulary->example_audio_public_id) {
+                Cloudinary::uploadApi()->destroy($lessonVocabulary->example_audio_public_id);
+            }
+        }
+
+        $lessonVocabulary->update($data);
+
+        return $lessonVocabulary->refresh();
     }
 
     /**

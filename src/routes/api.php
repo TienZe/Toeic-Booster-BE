@@ -121,7 +121,7 @@ Route::group([
 
 Route::group([
     'prefix' => 'vocabularies',
-    // 'middleware' => 'jwt.auth'
+    'middleware' => 'admin'
 ], function () {
     Route::get('/', [VocabularyController::class, 'index']);
     Route::post('/', [VocabularyController::class, 'store']);
@@ -162,6 +162,7 @@ Route::group([
 Route::group([
     'prefix' => 'lesson-vocabularies',
 ], function () {
+    Route::put('/{lessonVocabularyId}', [LessonVocabularyController::class, 'update']);
     Route::delete('/{lessonVocabularyId}', [LessonVocabularyController::class, 'delete']);
 });
 

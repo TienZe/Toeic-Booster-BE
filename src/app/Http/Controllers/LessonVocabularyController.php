@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\LessonVocabulary\BulkStoreLessonVocabularyRequest;
 use App\Http\Requests\LessonVocabulary\GetLessonVocabulariesRequest;
+use App\Http\Requests\LessonVocabulary\UpdateLessonVocabularyRequest;
 use App\Models\LessonVocabulary;
 use App\Services\LessonVocabularyService;
 
@@ -40,6 +41,13 @@ class LessonVocabularyController extends Controller
         return $created;
     }
 
+    public function update(UpdateLessonVocabularyRequest $request, $id)
+    {
+        $updatedLessonVocabulary = $this->lessonVocabularyService->updateLessonVocabulary($id, $request->validated());
+
+        return $this->lessonVocabularyService->getLessonVocabularyDTO($updatedLessonVocabulary);
+    }
+
     /**
      * Detach a vocabulary from a lesson.
      */
@@ -47,7 +55,7 @@ class LessonVocabularyController extends Controller
     {
         $deleted = $this->lessonVocabularyService->deleteLessonVocabulary($lessonId, $vocabularyId);
 
-        return [ "deleted" => $deleted ];
+        return ["deleted" => $deleted];
     }
 
 
@@ -55,6 +63,6 @@ class LessonVocabularyController extends Controller
     {
         $deleted = LessonVocabulary::destroy($lessonVocabularyId);
 
-        return [ "deleted" => $deleted ];
+        return ["deleted" => $deleted];
     }
 }

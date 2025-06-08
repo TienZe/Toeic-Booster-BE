@@ -16,7 +16,7 @@ class UpdateVocabularyRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'word' => 'sometimes|string|max:255|unique:vocabularies,word',
+            'word' => 'sometimes|string|max:255',
             'thumbnail' => 'nullable|string',
             'part_of_speech' => [
                 'required',
@@ -41,7 +41,6 @@ class UpdateVocabularyRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'word.unique' => 'This word already exists in the vocabulary.',
             'part_of_speech.required' => 'The part of speech is required.',
             'part_of_speech.in' => 'The selected part of speech is invalid.',
             'meaning.required' => 'The meaning is required.',
