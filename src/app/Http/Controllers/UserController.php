@@ -20,6 +20,7 @@ class UserController extends Controller
     public function updateProfile(UpdateProfileRequest $request)
     {
         $user = $this->userService->updateProfile($request->user()->id, $request->validated());
+
         return $user;
     }
 
@@ -31,5 +32,12 @@ class UserController extends Controller
     public function updateUser(UpdateUserRequest $request, $id)
     {
         return $this->userService->updateUser($id, $request->validated());
+    }
+
+    public function deleteUser($id)
+    {
+        $deleted = $this->userService->deleteUser($id);
+
+        return ["deleted" => $deleted];
     }
 }

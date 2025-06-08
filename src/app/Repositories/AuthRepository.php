@@ -28,7 +28,9 @@ class AuthRepository
     {
         try {
             $user = new User($data);
+            $user->password = $data['password'];
             $user->save();
+
             $user->refresh();
 
             return $user;

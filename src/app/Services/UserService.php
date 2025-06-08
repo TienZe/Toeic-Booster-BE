@@ -103,4 +103,15 @@ class UserService
 
         return $updatedUser;
     }
+
+    public function deleteUser($userId)
+    {
+        $user = User::findOrFail($userId);
+
+        if ($user->avatar_public_id) {
+            Cloudinary::uploadApi()->destroy($user->avatar_public_id);
+        }
+
+        return $user->delete();
+    }
 }

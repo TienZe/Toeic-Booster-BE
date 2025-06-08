@@ -49,6 +49,7 @@ Route::group([
 ], function () {
     Route::get('/', [UserController::class, 'getUsers']);
     Route::put('/{id}', [UserController::class, 'updateUser']);
+    Route::delete('/{id}', [UserController::class, 'deleteUser']);
 });
 
 Route::group([
