@@ -20,7 +20,7 @@ class Lesson extends Model
      * @var array<int, string>
      */
     protected $guarded = [];
-    protected $appends = [ 'num_of_words' ];
+    protected $appends = ['num_of_words'];
 
     /**
      * Get the collection that owns the lesson.
@@ -59,26 +59,25 @@ class Lesson extends Model
     public function getReservedThumbnailAttribute()
     {
         // Pls eager load before using this attribute to avoid N+1 query problem
-        $lessonVoca = $this->firstLessonVocabulary;
-        if (!$lessonVoca) {
+        $firstLessonVoca = $this->firstLessonVocabulary;
+        if (!$firstLessonVoca) {
             return null;
         }
 
-        if ($lessonVoca->thumbnail) {
-            return $lessonVoca->thumbnail;
+        if ($firstLessonVoca->thumbnail) {
+            return $firstLessonVoca->thumbnail;
         }
 
-        $systemWord = $lessonVoca->vocabulary;
-        if ($systemWord) {
-            if ($systemWord->thumbnail) {
-                return $systemWord->thumbnail;
-            }
+        $systemWord = $firstLessonVoca->vocabulary;
+        if ($systemWord && $systemWord->thumbnail) {
+            return $systemWord->thumbnail;
+        }
 
-            $keyword = $lessonVoca->word ?? $systemWord->word;
+        // Return bing image by keyword
+        $keyword = $firstLessonVoca->word ?? $systemWord?->word;
 
-            if ($keyword) {
-                return BingImageHelper::getBingImageByKeyword($keyword);
-            }
+        if ($keyword) {
+            return BingImageHelper::getBingImageByKeyword($keyword);
         }
 
         return null;

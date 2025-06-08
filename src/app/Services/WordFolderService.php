@@ -15,6 +15,7 @@ class WordFolderService
 
         $lessons->each(function ($lesson) {
             $lesson->append(['reserved_thumbnail']);
+            $lesson->makeHidden(['firstLessonVocabulary']);
         });
 
         return $lessons;
