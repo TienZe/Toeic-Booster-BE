@@ -16,6 +16,9 @@ class User extends Authenticatable implements JWTSubject
 
     const AVATAR_FOLDER = 'users/avatars';
 
+    const STATUS_ACTIVE = 'active';
+    const STATUS_INACTIVE = 'inactive';
+
     /**
      * The attributes that are mass assignable.
      *

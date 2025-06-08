@@ -45,6 +45,10 @@ class AuthService
             throw new \Exception('Invalid credentials');
         }
 
+        if ($user->status != User::STATUS_ACTIVE) {
+            throw new \Exception('User is inactive. Please contact admin if you believe this is a mistake.');
+        }
+
         try {
             $token = JWTAuth::fromUser($user);
         } catch (JWTException $e) {
