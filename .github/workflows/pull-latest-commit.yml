@@ -25,6 +25,9 @@ jobs:
             echo "🔧 ==> Installing dependencies of laravel application"
             docker exec -it toeic_server composer install
 
+            echo "🔧 ==> Running migrations"
+            docker exec -it toeic_server php artisan migrate
+
             echo "🔧 ==> Installing dependencies of recommendation FastAPI application"
             docker exec -it toeic_recommendation pip install -r requirements.txt
 
