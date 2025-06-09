@@ -7,19 +7,26 @@ use Illuminate\Support\Facades\DB;
 
 class ToeicChatService
 {
-    public function processAndResponseAssistantMessageFromQuestion($attemptId, $questionId, $userText)
+    public function processAndResponseAssistantMessageFromQuestion($chatHistoryId, $userText, $contextQuestionNumber)
     {
         $responseText = null;
 
-        DB::transaction(function () use ($attemptId, $questionId, $userText, &$responseText) {
+        DB::transaction(function () use ($chatHistoryId, $contextQuestionNumber, $userText, &$responseText) {
             // Get the last chat history
-            $chatHistory = ToeicChatHistory::where('toeic_test_attempt_id', $attemptId)
-                ->where('question_id', $questionId)
-                ->orderBy('created_at', 'desc')
-                ->first();
-
+            $chatHistory = ToeicChatHistory::find($chatHistoryId);
             if (!$chatHistory) {
-                $chatHistory = $this->createChatHistory($attemptId, $questionId);
+                return;
+            }
+
+            if (isset($contextQuestionNumber)) {
+                $chatHistory->load('toeicTestAttempt.toeicTest.questionGroups.questions');
+                $questionId = $chatHistory->toeicTestAttempt?->toeicTest
+                    ?->questionGroups
+                        ?->pluck('questions')->flatten()
+                    ->where('question_number', $contextQuestionNumber)
+                    ->first()?->id;
+
+                $this->appendQuestionInstructionContent($chatHistory, $questionId);
             }
 
             // Generate the user content from user text
@@ -53,13 +60,26 @@ class ToeicChatService
             'question_id' => $questionId,
         ]);
 
-        // Create the first instruction from question
-        $firstInstructionFromQuestion = GeminiChatBotService::createInstructionFromQuestion($questionId);
-        $chatHistory->contents()->create([
-            'content_serialized' => serialize($firstInstructionFromQuestion),
-        ]);
+        $this->appendQuestionInstructionContent($chatHistory, $questionId);
 
         return $chatHistory;
+    }
+
+    public function appendQuestionInstructionContent($chatHistoryIdOrInstance, $questionId)
+    {
+        $chatHistory = $chatHistoryIdOrInstance instanceof ToeicChatHistory ? $chatHistoryIdOrInstance : ToeicChatHistory::find($chatHistoryIdOrInstance);
+        if (!$chatHistory) {
+            return false;
+        }
+
+        // Create the first instruction from question
+        $questionInstructionContext = GeminiChatBotService::createInstructionFromQuestion($questionId);
+        $chatHistory->contents()->create([
+            'content_serialized' => serialize($questionInstructionContext),
+            'hidden' => true,
+        ]);
+
+        return true;
     }
 
     public function getChatHistory($attemptId, $questionId)

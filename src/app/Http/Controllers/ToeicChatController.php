@@ -16,11 +16,11 @@ class ToeicChatController extends Controller
 
     public function chat(Request $request)
     {
-        $attemptId     = $request->input('toeic_test_attempt_id');
-        $questionId    = $request->input('question_id');
-        $userText      = $request->input('text');
+        $toeicChatHistoryId = $request->input('toeic_chat_history_id');
+        $contextQuestionNumber = $request->input('context_question_number');
+        $userText = $request->input('text');
 
-        $responseText = $this->toeicChatService->processAndResponseAssistantMessageFromQuestion($attemptId, $questionId, $userText);
+        $responseText = $this->toeicChatService->processAndResponseAssistantMessageFromQuestion($toeicChatHistoryId, $userText, $contextQuestionNumber);
 
         return ['text' => $responseText];
     }

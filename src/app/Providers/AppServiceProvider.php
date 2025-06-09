@@ -21,19 +21,23 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        DB::listen(function (QueryExecuted $query) {
-            $time = $query->time;
-            $sql = \Illuminate\Support\Str::replaceArray('?', $query->bindings, $query->sql);
-            foreach ($query->bindings as $key => $value) {
-                // Use regex to replace the named bindings with actual values
-                $value = is_numeric($value) ? $value : "'" . addslashes($value) . "'";
-                $sql = preg_replace("/:$key\b/", $value, $sql);
-            }
-            $sql = self::prettyPrintSQL($sql);
-            $now = date('Y-m-d H:i:s');
-            $logStr = "- SQL: $now \n$sql\n----------------------------------------------------------------";
-            $placeholder = '';
-        });
+        $env = env('APP_ENV');
+
+        if ($env === 'local') {
+            DB::listen(function (QueryExecuted $query) {
+                $time = $query->time;
+                $sql = \Illuminate\Support\Str::replaceArray('?', $query->bindings, $query->sql);
+                foreach ($query->bindings as $key => $value) {
+                    // Use regex to replace the named bindings with actual values
+                    $value = is_numeric($value) ? $value : "'" . addslashes($value) . "'";
+                    $sql = preg_replace("/:$key\b/", $value, $sql);
+                }
+                $sql = self::prettyPrintSQL($sql);
+                $now = date('Y-m-d H:i:s');
+                $logStr = "- SQL: $now \n$sql\n----------------------------------------------------------------";
+                $placeholder = '';
+            });
+        }
     }
 
     public static function prettyPrintSQL($sql)
