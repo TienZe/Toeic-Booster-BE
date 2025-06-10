@@ -84,7 +84,7 @@ class ToeicChatService
 
     public function getChatHistory($attemptId, $questionId)
     {
-        $chatHistory = ToeicChatHistory::with('contents')
+        $chatHistory = ToeicChatHistory::with('displayContents')
             ->where('toeic_test_attempt_id', $attemptId)
             ->where('question_id', $questionId)
             ->orderBy('created_at', 'desc')
@@ -94,10 +94,7 @@ class ToeicChatService
             $chatHistory = $this->createChatHistory($attemptId, $questionId);
         }
 
-        $chatHistory->chatContents = $chatHistory->contents->slice(1);
-        unset($chatHistory->contents);
-
-        $chatHistory->chatContents = $chatHistory->chatContents->map(function ($contentModel) {
+        $chatHistory->chatContents = $chatHistory->displayContents->map(function ($contentModel) {
             $dtoContent = [
                 "id" => $contentModel->id,
                 "createdAt" => $contentModel->created_at,
@@ -114,6 +111,8 @@ class ToeicChatService
 
             return $dtoContent;
         });
+
+        $chatHistory->makeHidden('displayContents');
 
         return $chatHistory;
     }

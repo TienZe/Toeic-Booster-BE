@@ -24,4 +24,9 @@ final class ToeicChatHistory extends Model
     {
         return $this->hasMany(ToeicChatContent::class)->orderBy('created_at', 'asc');
     }
+
+    public function displayContents()
+    {
+        return $this->contents()->where('hidden', 0);
+    }
 }
