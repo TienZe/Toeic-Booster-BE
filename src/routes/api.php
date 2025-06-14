@@ -199,6 +199,7 @@ Route::group([
 ], function () {
     Route::post('/', [ToeicChatController::class, 'chat']);
     Route::get('/history/{attemptId}/{questionId}', [ToeicChatController::class, 'getChatHistory']);
+    Route::post('/history', [ToeicChatController::class, 'createNewChatHistory']);
 });
 
 Route::group([

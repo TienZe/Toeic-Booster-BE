@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ToeicChatHistory\CreateToeicChatHistoryRequest;
 use App\Services\ToeicChatService;
 use Illuminate\Http\Request;
 
@@ -29,6 +30,15 @@ class ToeicChatController extends Controller
     {
         $chatHistory = $this->toeicChatService->getChatHistory($attemptId, $questionId);
 
-        return response()->json($chatHistory);
+        return $chatHistory;
+    }
+
+    public function createNewChatHistory(CreateToeicChatHistoryRequest $request)
+    {
+        $validated = $request->validated();
+
+        $chatHistory = $this->toeicChatService->createChatHistory($validated['attempt_id'], $validated['question_id']);
+
+        return $chatHistory;
     }
 }

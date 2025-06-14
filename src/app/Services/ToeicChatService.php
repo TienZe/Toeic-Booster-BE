@@ -53,6 +53,10 @@ class ToeicChatService
         return $responseTextOrObject;
     }
 
+    /**
+     * Create a new chat history with the question instruction attached
+     * @return ToeicChatHistory
+     */
     public function createChatHistory($attemptId, $questionId)
     {
         $chatHistory = ToeicChatHistory::create([
