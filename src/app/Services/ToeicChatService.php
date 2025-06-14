@@ -9,9 +9,9 @@ class ToeicChatService
 {
     public function processAndResponseAssistantMessageFromQuestion($chatHistoryId, $userText, $contextQuestionNumber)
     {
-        $responseText = null;
+        $responseTextOrObject = null;
 
-        DB::transaction(function () use ($chatHistoryId, $contextQuestionNumber, $userText, &$responseText) {
+        DB::transaction(function () use ($chatHistoryId, $contextQuestionNumber, $userText, &$responseTextOrObject) {
             // Get the last chat history
             $chatHistory = ToeicChatHistory::find($chatHistoryId);
             if (!$chatHistory) {
@@ -47,10 +47,10 @@ class ToeicChatService
                 'content_serialized' => serialize($responseContent),
             ]);
 
-            $responseText = $responseContent->parts[0]->text;
+            $responseTextOrObject = json_decode($responseContent->parts[0]->text);
         });
 
-        return $responseText;
+        return $responseTextOrObject;
     }
 
     public function createChatHistory($attemptId, $questionId)
@@ -102,7 +102,7 @@ class ToeicChatService
 
             foreach ($contentModel->content->parts as $part) {
                 $dtoContent["parts"][] = [
-                    'text' => $part->text,
+                    'text' => json_decode($part->text) ?? $part->text,
                     'inlineData' => $part->inlineData,
                 ];
             }

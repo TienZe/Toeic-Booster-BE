@@ -54,6 +54,8 @@ async def get_recommendations(
         
         weighted_vector /= total_weight
         
+        # No need to use L1 normalization because it just multiplies the vector by a scalar, so the vector direction remains the same
+        
         # print("weighted_vector", weighted_vector)
         # print("shape", weighted_vector.shape)
         

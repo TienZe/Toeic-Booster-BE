@@ -5,10 +5,12 @@ namespace App\Services;
 use App\Entities\GeneratedWord;
 use App\Enums\MediaFileType;
 use App\Enums\PartOfSpeech;
+use App\Helpers\MarkdownHelper;
 use App\Models\Question;
 use Gemini\Data\Blob;
 use Gemini\Data\Content;
 use Gemini\Data\GenerationConfig;
+use Gemini\Data\Part;
 use Gemini\Data\Schema;
 use Gemini\Enums\DataType;
 use Gemini\Enums\MimeType;
@@ -20,7 +22,7 @@ class GeminiChatBotService
 {
     public static function createContent(string $text, $imageUrl = null): Content
     {
-        $parts = [ $text ];
+        $parts = [$text];
 
         if ($imageUrl) {
             $parts[] = new Blob(
@@ -82,9 +84,9 @@ Keep your answers concise.";
                     $mimeType = MimeType::IMAGE_PNG;
                 }
 
-                return  new Blob(
-                        mimeType: $mimeType,
-                        data: base64_encode(file_get_contents($img->file_url))
+                return new Blob(
+                    mimeType: $mimeType,
+                    data: base64_encode(file_get_contents($img->file_url))
                 );
             }),
         ]);
@@ -94,15 +96,73 @@ Keep your answers concise.";
     {
         $result = Gemini::generativeModel(model: 'gemini-2.0-flash')
             ->withSystemInstruction(Content::parse(
-"You are a friendly and professional AI tutor, specialized in preparing students for the TOEIC Listening and Reading test.
-Always respond concisely, clearly, and to the point. Always respond in Vietnamese.
-If the question is unrelated to TOEIC, respond with: 'Xin lỗi, tôi không thuộc lĩnh vực mà bạn đang đề cập'.
-If asked about model information, respond with: 'Tôi được huấn luyện bởi Toeic Booster.'"))
+                <<<PROMPT
+1. You are a friendly and professional AI tutor, specialized in preparing students for the TOEIC Listening and Reading test.
+- Always respond concisely, clearly, and to the point. Always respond in Vietnamese.
+- If the question is unrelated to TOEIC, respond with: 'Xin lỗi, tôi không thuộc lĩnh vực mà bạn đang đề cập'.
+- If asked about model information, respond with: 'Tôi được huấn luyện bởi Toeic Booster.'
+
+2. Always return a valid JSON object without any additional text or explanations before or after it.
+
+3. The JSON object MUST NOT be wrapped in markdown (like ```json)
+
+   **Correct Output Example:**
+   {
+     "text": "This is a correct response.",
+     "type": "text"
+   }
+
+   **Incorrect Output Example:**
+   Here is the JSON you requested:
+   ```json
+   {
+     "text": "This is an incorrect response.",
+     "type": "text"
+   }
+
+4. For a text-only response, format the message using Markdown for clear presentation (e.g., using lists, bolding, table, etc.). Return the object in the following format:
+{
+  "text": "<Markdown-formatted message to the user>",
+  "type": "text"
+}
+
+5. Use the 'option' type for two main cases:
+    (1) When providing a multiple-choice practice question (e.g., user asks for a "similar question"):
+        - Put the question stem (the part before the A, B, C, D choices) in the `text` field.
+        - Put EACH answer choice (e.g., "A. on time", "B. in time") as a separate item in the `options` array.
+    (2) When you need to ask a clarifying question because the user's request is ambiguous.
+
+    Do NOT use this for simply listing information. Return the object in the following format:
+{
+  "text": "<message to the user>",
+  "options": [
+    "<button label>",
+    "...",
+    "<button label>"
+  ],
+  "type": "option"
+}
+PROMPT
+            ))
             ->generateContent(...$contents);
 
-        $parts = $result->parts();
+        $parts = $result->parts(); # $candidates[0]->content->parts
 
-        return new Content($parts, Role::MODEL);
+        $preprocessingParts = array_map(function ($part) {
+            // remove markdown ```json
+            $newText = MarkdownHelper::cleanJsonMarkdown($part->text);
+            return new Part(
+                $newText,
+                $part->inlineData,
+                $part->fileData,
+                $part->functionCall,
+                $part->functionResponse,
+                $part->executableCode,
+                $part->codeExecutionResult
+            );
+        }, $parts);
+
+        return new Content($preprocessingParts, Role::MODEL);
     }
 
     public static function generateStructuredOutput($schemaProperties, $prompt)
@@ -119,7 +179,7 @@ If asked about model information, respond with: 'Tôi được huấn luyện b�
             )
             ->generateContent($prompt);
 
-        return $result->json();
+        return $result->json(); // json_decode($candidates[0].parts[0].text)
     }
 
     public static function generateWord(GeneratedWord $baseWord): GeneratedWord
@@ -139,7 +199,7 @@ If asked about model information, respond with: 'Tôi được huấn luyện b�
         $result = self::generateStructuredOutput($schemaProperties, $prompt);
 
         $generatedWord = new GeneratedWord();
-        $generatedWord->fromArray((array)$result);
+        $generatedWord->fromArray((array) $result);
 
         return $generatedWord;
     }
