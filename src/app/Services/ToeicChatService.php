@@ -57,7 +57,7 @@ class ToeicChatService
                 'content_serialized' => serialize($responseContent),
             ]);
 
-            $responseTextOrObject = json_decode($responseContent->parts[0]->text);
+            $responseTextOrObject = json_decode($responseContent->parts[0]->text) ?? $responseContent->parts[0]->text;
         });
 
         return $responseTextOrObject;
