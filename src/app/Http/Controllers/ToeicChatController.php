@@ -37,7 +37,11 @@ class ToeicChatController extends Controller
     {
         $validated = $request->validated();
 
-        $chatHistory = $this->toeicChatService->createChatHistory($validated['attempt_id'], $validated['question_id']);
+        if (isset($validated['question_number'])) {
+            $chatHistory = $this->toeicChatService->createChatHistoryByQuestionNumber($validated['attempt_id'], $validated['question_number']);
+        } else {
+            $chatHistory = $this->toeicChatService->createChatHistory($validated['attempt_id'], $validated['question_id']);
+        }
 
         return $chatHistory;
     }

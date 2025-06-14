@@ -118,9 +118,13 @@ class ToeicTestService
 
     public function getToeicTestById($id)
     {
-        return ToeicTest::with(['questionGroups' => function ($query) {
-            $query->orderBy('group_index');
-        }, 'questionGroups.questions', 'questionGroups.medias'])->where('id', $id)->first();
+        return ToeicTest::with([
+            'questionGroups' => function ($query) {
+                $query->orderBy('group_index');
+            },
+            'questionGroups.questions',
+            'questionGroups.medias'
+        ])->where('id', $id)->first();
     }
 
     public function getListOfToeicTests(array $options)
@@ -177,5 +181,20 @@ class ToeicTestService
          *  ORDER BY `attempts_count` desc, `id` desc
          *  LIMIT 6;
          */
+    }
+
+    public function getQuestionByNumber($toeicTestId, $questionNumber)
+    {
+        $toeicTest = ToeicTest::with('questionGroups:id,toeic_test_id', 'questionGroups.questions')
+            ->where('id', $toeicTestId)
+            ->first();
+
+        if (!$toeicTest) {
+            return null;
+        }
+
+        $questions = $toeicTest?->questionGroups->pluck('questions')->flatten();
+
+        return $questions->where('question_number', $questionNumber)->first();
     }
 }

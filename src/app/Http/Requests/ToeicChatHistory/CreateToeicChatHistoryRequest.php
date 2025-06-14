@@ -10,7 +10,8 @@ class CreateToeicChatHistoryRequest extends FormRequest
     {
         return [
             'attempt_id' => 'required|exists:toeic_test_attempts,id',
-            'question_id' => 'required|exists:questions,id',
+            'question_number' => 'required|integer|min:1|max:200',
+            'question_id' => 'required_if:question_number,null|exists:questions,id',
         ];
     }
 }

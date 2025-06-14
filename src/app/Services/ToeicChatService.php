@@ -3,10 +3,19 @@
 namespace App\Services;
 
 use App\Models\ToeicChatHistory;
+use App\Models\ToeicTestAttempt;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class ToeicChatService
 {
+    private $toeicTestService;
+
+    public function __construct(ToeicTestService $toeicTestService)
+    {
+        $this->toeicTestService = $toeicTestService;
+    }
+
     public function processAndResponseAssistantMessageFromQuestion($chatHistoryId, $userText, $contextQuestionNumber)
     {
         $responseTextOrObject = null;
@@ -19,6 +28,7 @@ class ToeicChatService
             }
 
             if (isset($contextQuestionNumber)) {
+                // Append new question instruction for the posted context question
                 $chatHistory->load('toeicTestAttempt.toeicTest.questionGroups.questions');
                 $questionId = $chatHistory->toeicTestAttempt?->toeicTest
                     ?->questionGroups
@@ -68,6 +78,21 @@ class ToeicChatService
 
         return $chatHistory;
     }
+
+    public function createChatHistoryByQuestionNumber($attemptId, $questionNumber)
+    {
+        $attempt = ToeicTestAttempt::findOrFail($attemptId);
+        $question = $this->toeicTestService->getQuestionByNumber($attempt->toeic_test_id, $questionNumber);
+
+        if (!$question) {
+            throw ValidationException::withMessages([
+                'question_number' => ['Question not found'],
+            ]);
+        }
+
+        return $this->createChatHistory($attemptId, $question->id);
+    }
+
 
     public function appendQuestionInstructionContent($chatHistoryIdOrInstance, $questionId)
     {
