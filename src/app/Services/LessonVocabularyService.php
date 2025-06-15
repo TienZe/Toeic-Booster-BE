@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Entities\GeneratedWord;
+use App\Models\Lesson;
 use App\Models\LessonVocabulary;
 use App\Models\Vocabulary;
 use App\Repositories\LessonVocabularyRepository;
@@ -65,7 +66,6 @@ class LessonVocabularyService
                         'pronunciation_audio' => $item['pronunciation_audio'] ?? null,
                     ]);
                 }
-
             }
         });
 
@@ -226,5 +226,45 @@ class LessonVocabularyService
             "example_meaning" => $lessonVocabulary->example_meaning ?? $defaultVocabulary?->example_meaning,
             "example_audio" => $lessonVocabulary->example_audio ?? $defaultVocabulary?->example_audio,
         ];
+    }
+
+    // For AI usage - function calling only
+    public static function addWordsToFolder($wordFolderId, array $words)
+    {
+        $loggedInUserId = auth()->id();
+        $wordFolder = Lesson::findOrFail($wordFolderId);
+
+        if ($wordFolder->user_id != $loggedInUserId) {
+            throw new \Exception('You are not allowed to add words to this folder');
+        }
+
+        $created = [];
+
+        DB::transaction(function () use ($wordFolderId, $words, &$created) {
+            foreach ($words as $item) {
+
+                // Create own vocabulary of lesson
+                $basedWord = new GeneratedWord();
+                $basedWord->fromArray($item);
+
+                // Generate word again to ensure the quality of the word
+                $generatedWord = GeminiChatBotService::generateWord($basedWord);
+
+                $created[] = LessonVocabulary::create([
+                    'lesson_id' => $wordFolderId,
+                    'word' => $generatedWord->word,
+                    'definition' => $generatedWord->definition,
+                    'meaning' => $generatedWord->meaning,
+                    'pronunciation' => $generatedWord->pronunciation,
+                    'example' => $generatedWord->example,
+                    'example_meaning' => $generatedWord->exampleMeaning,
+                    'part_of_speech' => $generatedWord->partOfSpeech,
+
+                    'pronunciation_audio' => $item['pronunciation_audio'] ?? null,
+                ]);
+            }
+        });
+
+        return $created;
     }
 }

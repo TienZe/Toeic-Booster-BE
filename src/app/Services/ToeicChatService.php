@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\ToeicChatHistory;
 use App\Models\ToeicTestAttempt;
+use Gemini\Data\Content;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -50,9 +51,14 @@ class ToeicChatService
                 return $contentModel->content;
             })->toArray();
 
-            $responseContent = GeminiChatBotService::generateContent($contents);
+            $responseContent = GeminiChatBotService::generateContent($contents, function (Content $newCreatedContent) use ($chatHistory) {
+                $chatHistory->contents()->create([
+                    'content_serialized' => serialize($newCreatedContent),
+                    'hidden' => true,
+                ]);
+            });
 
-            // Save the model response content
+            // Save the last model response content (usually text response)
             $chatHistory->contents()->create([
                 'content_serialized' => serialize($responseContent),
             ]);
@@ -111,8 +117,10 @@ class ToeicChatService
         return true;
     }
 
-    public function getChatHistory($attemptId, $questionId)
+    public function getChatHistory($attemptId, $questionId, $options)
     {
+        $includeHidden = $options['include_hidden'] ?? false;
+
         $chatHistory = ToeicChatHistory::with('displayContents')
             ->where('toeic_test_attempt_id', $attemptId)
             ->where('question_id', $questionId)
@@ -123,7 +131,15 @@ class ToeicChatService
             $chatHistory = $this->createChatHistory($attemptId, $questionId);
         }
 
-        $chatHistory->chatContents = $chatHistory->displayContents->map(function ($contentModel) {
+        $returnedContents = [];
+        if ($includeHidden) {
+            $returnedContents = $chatHistory->contents;
+        } else {
+            $returnedContents = $chatHistory->displayContents;
+        }
+
+
+        $chatHistory->chatContents = $returnedContents->map(function ($contentModel) {
             $dtoContent = [
                 "id" => $contentModel->id,
                 "createdAt" => $contentModel->created_at,
@@ -133,6 +149,11 @@ class ToeicChatService
                 $dtoContent["parts"][] = [
                     'text' => json_decode($part->text) ?? $part->text,
                     'inlineData' => $part->inlineData,
+                    // 'fileData' => $part->fileData,
+                    'functionCall' => $part->functionCall,
+                    'functionResponse' => $part->functionResponse,
+                    // 'executableCode' => $part->executableCode,
+                    // 'codeExecutionResult' => $part->codeExecutionResult,
                 ];
             }
 
@@ -141,7 +162,7 @@ class ToeicChatService
             return $dtoContent;
         });
 
-        $chatHistory->makeHidden('displayContents');
+        $chatHistory->makeHidden(['displayContents', 'contents']);
 
         return $chatHistory;
     }

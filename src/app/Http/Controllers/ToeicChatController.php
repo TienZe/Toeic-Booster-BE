@@ -26,9 +26,9 @@ class ToeicChatController extends Controller
         return ['text' => $responseText];
     }
 
-    public function getChatHistory($attemptId, $questionId)
+    public function getChatHistory(Request $request, $attemptId, $questionId)
     {
-        $chatHistory = $this->toeicChatService->getChatHistory($attemptId, $questionId);
+        $chatHistory = $this->toeicChatService->getChatHistory($attemptId, $questionId, $request->all());
 
         return $chatHistory;
     }

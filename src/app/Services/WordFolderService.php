@@ -21,6 +21,11 @@ class WordFolderService
         return $lessons;
     }
 
+    public function getWordFoldersOfLoggedInUser()
+    {
+        return $this->getWordFolders(auth()->id());
+    }
+
     public function createWordFolder($ownerUserId, array $data)
     {
         $wordFolder = Lesson::create([
