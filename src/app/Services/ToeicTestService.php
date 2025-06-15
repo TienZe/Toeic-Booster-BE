@@ -169,6 +169,7 @@ class ToeicTestService
     public function getMostTakenToeicTests($limit = 8)
     {
         return ToeicTest::withCount('attempts')
+            ->where('status', 'active')
             ->orderBy('attempts_count', 'desc')
             ->orderBy('id', 'desc')
             ->limit($limit)
