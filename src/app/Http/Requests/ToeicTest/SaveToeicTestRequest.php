@@ -15,6 +15,7 @@ class SaveToeicTestRequest extends FormRequest
             'id' => 'sometimes|integer',
             'name' => 'required_without:id|string',
             'category' => 'required_without:id|integer|exists:toeic_test_categories,id',
+            'status' => 'sometimes|required|string|in:active,inactive,pending',
             'question_groups' => 'sometimes|array',
             'question_groups.*.id' => 'sometimes',
             'question_groups.*.transcript' => 'sometimes|nullable|string',

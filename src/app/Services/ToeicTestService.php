@@ -27,6 +27,7 @@ class ToeicTestService
                 'name' => $data['name'] ?? $toeicTest->name,
                 'description' => $data['description'] ?? $toeicTest->description,
                 'toeic_test_category_id' => $data['category'] ?? $toeicTest->toeic_test_category_id,
+                'status' => $data['status'] ?? ($toeicTest->status ?? 'pending'),
             ]);
             $toeicTest->save();
 
@@ -140,6 +141,10 @@ class ToeicTestService
 
         if (isset($options['filtered_category'])) {
             $query->where('toeic_test_category_id', $options['filtered_category']);
+        }
+
+        if (isset($options['filtered_status'])) {
+            $query->where('status', $options['filtered_status']);
         }
 
         if (isset($options['with_stats'])) {

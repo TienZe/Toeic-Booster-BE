@@ -13,6 +13,7 @@ class GetToeicTestsRequest extends FormRequest
             'limit' => 'sometimes|integer|min:1',
             'search' => 'sometimes|nullable|string',
             'filtered_category' => 'sometimes|numeric|exists:toeic_test_categories,id',
+            'filtered_status' => 'sometimes|in:active,inactive,pending',
             'with_stats' => 'sometimes|boolean',
         ];
     }
