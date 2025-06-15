@@ -94,7 +94,7 @@ class GeminiChatBotService
     {
         $passedContent = $contents;
 
-        $generativeModel = Gemini::generativeModel(model: 'gemini-2.0-flash')
+        $generativeModel = Gemini::generativeModel(model: 'gemini-2.5-flash-preview-04-17')
             ->withTool(new Tool(functionDeclarations: FunctionCallingService::getAvailableFunctionDeclarations()))
             ->withSystemInstruction(Content::parse(
                 <<<PROMPT
@@ -236,24 +236,69 @@ All rules are strict and must be followed.
     - Use exact ID from getWordFoldersOfUser result
     - Actually call addWordsToFolder function (don't just show parameters)
     - After successful function call, respond with confirmation message
+
+10. ⚠️ CRITICAL VOCABULARY ADDITION AFTER FOLDER CREATION ⚠️
+    When user creates a new folder in the context of adding vocabulary words, you MUST automatically add the vocabulary words to the newly created folder.
+
+    MANDATORY FLOW:
+    1. User requests to add vocabulary words → Extract vocabulary list
+    2. User chooses "Tạo một thư mục mới" → Store vocabulary list in memory
+    3. User provides folder name and description → Call createWordFolder
+    4. After createWordFolder succeeds → IMMEDIATELY call addWordsToFolder with:
+       - wordFolderId: Use the ID from createWordFolder response
+       - words: Use the vocabulary list stored from step 2
+    5. Confirm completion to user
+
+    ❌ WRONG BEHAVIOR (CURRENT ISSUE):
+    User: "Thêm từ vựng vào thư mục của tôi"
+    → List vocabulary: fix, bicycle, paint, etc.
+    → User: "Tạo một thư mục mới"
+    → User: "tên là 'thư mục từ mới' với mô tả 'từ mới part 1'"
+    → Call createWordFolder → Success
+    → STOP HERE (WRONG!) - Only say "Đã tạo thư mục thành công"
+
+    ✅ CORRECT BEHAVIOR (REQUIRED):
+    User: "Thêm từ vựng vào thư mục của tôi"
+    → List vocabulary: fix, bicycle, paint, etc.
+    → User: "Tạo một thư mục mới"
+    → User: "tên là 'thư mục từ mới' với mô tả 'từ mới part 1'"
+    → Call createWordFolder → Success (get folder ID: 7719)
+    → IMMEDIATELY call addWordsToFolder with wordFolderId: 7719 and the vocabulary list
+    → Confirm: "Đã tạo thư mục 'thư mục từ mới' và thêm 8 từ vựng vào thư mục thành công!"
+
+    🔥 ABSOLUTE REQUIREMENT: Never stop after createWordFolder when vocabulary words are waiting to be added!
 PROMPT
             ));
 
         $result = $generativeModel->generateContent(...$passedContent);
 
         // Handle function calling
-        while (count($result->parts()) && $result->parts()[0]->functionCall !== null) {
-            $functionCall = $result->parts()[0]->functionCall;
-            $functionResponse = FunctionCallingService::handleFunctionCall($functionCall);
+        while (count($result->parts()) && self::hasAnyFunctionCall($result->parts())) {
+            $functionCallParts = array_filter($result->parts(), function ($part) {
+                return isset($part->functionCall);
+            });
 
-            // Continue pass the response to the model
+            $functionResponses = [];
+
+            // Process all function calls in this response
+            foreach ($functionCallParts as $functionCallPart) {
+                $functionCall = $functionCallPart->functionCall;
+                $functionResponse = FunctionCallingService::handleFunctionCall($functionCall);
+                $functionResponses[] = $functionResponse;
+            }
+
+            // Add model response and all function responses to content
             $passedContent[] = new Content($result->parts(), Role::MODEL);
-            $passedContent[] = $functionResponse; // role user
+            foreach ($functionResponses as $functionResponse) {
+                $passedContent[] = $functionResponse;
+            }
 
-            // Save the function call and function response to chat history for later usage
+            // Save to chat history once
             if ($onSaveNewContentFn) {
                 $onSaveNewContentFn(new Content($result->parts(), Role::MODEL));
-                $onSaveNewContentFn($functionResponse);
+                foreach ($functionResponses as $functionResponse) {
+                    $onSaveNewContentFn($functionResponse);
+                }
             }
 
             $result = $generativeModel->generateContent(...$passedContent);
@@ -285,16 +330,13 @@ PROMPT
         return new Content($preprocessingParts, Role::MODEL);
     }
 
-    public static function generateStructuredOutput($schemaProperties, $prompt)
+    public static function generateStructuredOutput($schema, $prompt)
     {
         $result = Gemini::generativeModel(model: 'gemini-2.0-flash')
             ->withGenerationConfig(
                 generationConfig: new GenerationConfig(
                     responseMimeType: ResponseMimeType::APPLICATION_JSON,
-                    responseSchema: new Schema(
-                        type: DataType::OBJECT,
-                        properties: $schemaProperties,
-                    )
+                    responseSchema: $schema,
                 )
             )
             ->generateContent($prompt);
@@ -302,26 +344,66 @@ PROMPT
         return $result->json(); // json_decode($candidates[0].parts[0].text)
     }
 
-    public static function generateWord(GeneratedWord $baseWord): GeneratedWord
+    public static function getGeneratedWordSchema()
     {
         $schemaProperties = [
             'word' => new Schema(type: DataType::STRING, example: 'hello'),
-            'definition' => new Schema(type: DataType::STRING, example: 'an expression of greeting'),
-            'meaning' => new Schema(type: DataType::STRING, example: 'xin chào', description: 'Meaning in Vietnamese, short and concise'),
+            'definition' => new Schema(type: DataType::STRING, example: 'an expression of greeting', maxLength: 200),
+            'meaning' => new Schema(type: DataType::STRING, example: 'xin chào', description: 'Meaning in Vietnamese, short and concise', maxLength: 50),
             'pronunciation' => new Schema(type: DataType::STRING, example: '/həˈloʊ/'),
-            'example' => new Schema(type: DataType::STRING, example: 'Hello, how are you?', description: 'Example in English. About 10 - 15 words.'),
-            'exampleMeaning' => new Schema(type: DataType::STRING, example: 'Xin chào, bạn có khoẻ không?', description: 'Meaning of the example in Vietnamese'),
+            'example' => new Schema(type: DataType::STRING, example: 'Hello, how are you?', description: 'Example in English. About 10 - 15 words.', maxLength: 200),
+            'exampleMeaning' => new Schema(type: DataType::STRING, example: 'Xin chào, bạn có khoẻ không?', description: 'Meaning of the example in Vietnamese. About 10 - 15 words.', maxLength: 200),
             'partOfSpeech' => new Schema(type: DataType::STRING, enum: PartOfSpeech::values(), example: 'noun', description: 'Part of speech of the word'),
         ];
 
+        return new Schema(
+            type: DataType::OBJECT,
+            properties: $schemaProperties,
+            required: ['word', 'definition', 'meaning', 'pronunciation', 'example', 'exampleMeaning', 'partOfSpeech']
+        );
+    }
+
+    public static function generateWord(GeneratedWord $baseWord): GeneratedWord
+    {
         $prompt = "You are EN - VI dictionary. Just fill in the missing information for the word in English except `meaning` and `exampleMeaning`: " . json_encode($baseWord);
 
-        $result = self::generateStructuredOutput($schemaProperties, $prompt);
+        $result = self::generateStructuredOutput(self::getGeneratedWordSchema(), $prompt);
 
         $generatedWord = new GeneratedWord();
         $generatedWord->fromArray((array) $result);
 
         return $generatedWord;
+    }
+
+    public static function generateListOfWords(array $baseWords)
+    {
+        $prompt = <<<PROMPT
+            You are EN - VI dictionary. Just fill in the missing information in English (except `meaning` and `exampleMeaning` are in Vietnamese) for each word of the given JSON array below.
+        PROMPT;
+
+        $prompt .= json_encode($baseWords);
+
+        $schema = new Schema(
+            type: DataType::ARRAY,
+            items: self::getGeneratedWordSchema(),
+        );
+
+        $result = self::generateStructuredOutput($schema, $prompt);
+
+        return $result;
+    }
+
+    /**
+     * Check if any part in the parts array contains a function call
+     */
+    private static function hasAnyFunctionCall(array $parts): bool
+    {
+        foreach ($parts as $part) {
+            if (isset($part->functionCall)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

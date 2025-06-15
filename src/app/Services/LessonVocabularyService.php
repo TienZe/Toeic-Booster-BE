@@ -237,14 +237,19 @@ class LessonVocabularyService
         $created = [];
 
         DB::transaction(function () use ($wordFolderId, $words, &$created) {
-            foreach ($words as $item) {
-                // Create own vocabulary of lesson
+            // 1. Map to based word array
+            $basedWords = array_map(function ($word) {
                 $basedWord = new GeneratedWord();
-                $basedWord->fromArray($item);
+                $basedWord->fromArray($word);
 
-                // Generate word again to ensure the quality of the word
-                $generatedWord = GeminiChatBotService::generateWord($basedWord);
+                return $basedWord;
+            }, $words);
 
+            // 2. Generate list of words using based words
+            $generatedWords = GeminiChatBotService::generateListOfWords($basedWords);
+
+            // 3. Create model lesson vocabularies
+            foreach ($generatedWords as $generatedWord) {
                 $created[] = LessonVocabulary::create([
                     'lesson_id' => $wordFolderId,
                     'word' => $generatedWord->word,
@@ -254,8 +259,6 @@ class LessonVocabularyService
                     'example' => $generatedWord->example,
                     'example_meaning' => $generatedWord->exampleMeaning,
                     'part_of_speech' => $generatedWord->partOfSpeech,
-
-                    'pronunciation_audio' => $item['pronunciation_audio'] ?? null,
                 ]);
             }
         });
