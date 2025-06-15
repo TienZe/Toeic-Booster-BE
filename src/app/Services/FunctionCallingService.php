@@ -57,6 +57,18 @@ class FunctionCallingService
                     ],
                     role: Role::USER
                 );
+            case 'createWordFolder':
+                return new Content(
+                    parts: [
+                        new Part(
+                            functionResponse: new FunctionResponse(
+                                name: 'createWordFolder',
+                                response: ['created_folder' => $wordFolderService->createWordFolderForLoggedInUser($functionCall->args)->toArray()],
+                            )
+                        )
+                    ],
+                    role: Role::USER
+                );
         }
     }
 
@@ -282,6 +294,75 @@ class FunctionCallingService
             )
         );
     }
+
+    public static function createWordFolderDeclaration()
+    {
+        return new FunctionDeclaration(
+            name: 'createWordFolder',
+            description: 'Creates a new word folder for the logged-in user. A word folder is a personal collection where users can save and organize their vocabulary words. This function should be called when the user expresses intent to create a new folder. For example, if the user says "Tạo thư mục từ vựng mới", "Tôi muốn tạo một thư mục để lưu từ vựng", or "Tạo thư mục tên là ABC".',
+            parameters: new Schema(
+                type: DataType::OBJECT,
+                properties: [
+                    'name' => new Schema(
+                        type: DataType::STRING,
+                        description: 'Name of the word folder (required, max 100 characters)',
+                        example: 'TOEIC Vocabulary Part 1'
+                    ),
+                    'description' => new Schema(
+                        type: DataType::STRING,
+                        description: 'Description of the word folder (optional, max 255 characters)',
+                        example: 'Collection of vocabulary words for TOEIC Part 1 practice'
+                    ),
+                ],
+                required: ['name']
+            ),
+            response: new Schema(
+                type: DataType::OBJECT,
+                properties: [
+                    'created_folder' => new Schema(
+                        type: DataType::OBJECT,
+                        properties: [
+                            'id' => new Schema(
+                                type: DataType::NUMBER,
+                                description: 'ID of the newly created word folder',
+                                example: 123
+                            ),
+                            'name' => new Schema(
+                                type: DataType::STRING,
+                                description: 'Name of the word folder',
+                                example: 'TOEIC Vocabulary Part 1'
+                            ),
+                            'description' => new Schema(
+                                type: DataType::STRING,
+                                description: 'Description of the word folder',
+                                example: 'Collection of vocabulary words for TOEIC Part 1 practice'
+                            ),
+                            'user_id' => new Schema(
+                                type: DataType::NUMBER,
+                                description: 'ID of the user who owns this folder',
+                                example: 1
+                            ),
+                            'created_at' => new Schema(
+                                type: DataType::STRING,
+                                description: 'Creation timestamp',
+                                example: '2025-06-15T10:30:00.000000Z'
+                            ),
+                            'updated_at' => new Schema(
+                                type: DataType::STRING,
+                                description: 'Last update timestamp',
+                                example: '2025-06-15T10:30:00.000000Z'
+                            ),
+                            'num_of_words' => new Schema(
+                                type: DataType::NUMBER,
+                                description: 'Number of words in the folder (initially 0)',
+                                example: 0
+                            ),
+                        ]
+                    )
+                ]
+            )
+        );
+    }
     //------------------------ END DECLARATIONS -----------------------
 
 
@@ -292,6 +373,7 @@ class FunctionCallingService
             self::getWordFoldersOfLoggedInUserDeclaration(),
             self::addWordsToFolderDeclaration(),
             self::getWordFolderDetailsDeclaration(),
+            self::createWordFolderDeclaration(),
         ];
     }
 }

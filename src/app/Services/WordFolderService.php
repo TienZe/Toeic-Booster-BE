@@ -75,4 +75,9 @@ class WordFolderService
 
         return $folder;
     }
+
+    public function createWordFolderForLoggedInUser(array $data)
+    {
+        return $this->createWordFolder(auth()->id(), $data);
+    }
 }
