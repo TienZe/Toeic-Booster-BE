@@ -37,7 +37,11 @@ class ToeicChatService
                     ->where('question_number', $contextQuestionNumber)
                     ->first()?->id;
 
-                $this->appendQuestionInstructionContent($chatHistory, $questionId);
+                // Append new question instruction if the question is not the last indexed question
+                $lastIndexedQuestionId = $chatHistory->indexed_question_id;
+                if ($questionId != $lastIndexedQuestionId) {
+                    $this->appendQuestionInstructionContent($chatHistory, $questionId);
+                }
             }
 
             // Generate the user content from user text
@@ -113,6 +117,10 @@ class ToeicChatService
             'content_serialized' => serialize($questionInstructionContext),
             'hidden' => true,
         ]);
+
+        // Save last indexed question id
+        $chatHistory->indexed_question_id = $questionId;
+        $chatHistory->save();
 
         return true;
     }
