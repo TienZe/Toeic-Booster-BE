@@ -229,20 +229,15 @@ class LessonVocabularyService
     }
 
     // For AI usage - function calling only
-    public static function addWordsToFolder($wordFolderId, array $words)
+    public function addWordsToFolder($wordFolderId, array $words)
     {
         $loggedInUserId = auth()->id();
-        $wordFolder = Lesson::findOrFail($wordFolderId);
-
-        if ($wordFolder->user_id != $loggedInUserId) {
-            throw new \Exception('You are not allowed to add words to this folder');
-        }
+        $wordFolder = Lesson::where('user_id', $loggedInUserId)->findOrFail($wordFolderId); // for validation
 
         $created = [];
 
         DB::transaction(function () use ($wordFolderId, $words, &$created) {
             foreach ($words as $item) {
-
                 // Create own vocabulary of lesson
                 $basedWord = new GeneratedWord();
                 $basedWord->fromArray($item);

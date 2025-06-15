@@ -6,6 +6,13 @@ use App\Models\Lesson;
 
 class WordFolderService
 {
+    protected LessonVocabularyService $lessonVocabularyService;
+
+    public function __construct(LessonVocabularyService $lessonVocabularyService)
+    {
+        $this->lessonVocabularyService = $lessonVocabularyService;
+    }
+
     public function getWordFolders($ownerUserId)
     {
         $lessons = Lesson::with('firstLessonVocabulary.vocabulary')
@@ -23,7 +30,9 @@ class WordFolderService
 
     public function getWordFoldersOfLoggedInUser()
     {
-        return $this->getWordFolders(auth()->id());
+        $wordFolders = $this->getWordFolders(auth()->id());
+
+        return $wordFolders;
     }
 
     public function createWordFolder($ownerUserId, array $data)
@@ -48,5 +57,22 @@ class WordFolderService
     public function deleteWordFolder($wordFolderId)
     {
         return Lesson::destroy($wordFolderId);
+    }
+
+    public function getWordFolderDetails($wordFolderIdOrName)
+    {
+        $loggedInUserId = auth()->id();
+        $folder = Lesson::where('user_id', $loggedInUserId)
+            ->where(function ($query) use ($wordFolderIdOrName) {
+                $query->where('id', $wordFolderIdOrName)
+                    ->orWhere('name', $wordFolderIdOrName);
+            })
+            ->firstOrFail();
+
+        $folder->append(['num_of_words']);
+
+        $folder->words = $this->lessonVocabularyService->getLessonVocabularies($folder->id);
+
+        return $folder;
     }
 }
