@@ -15,7 +15,7 @@ class CollectionRepository
      */
     public function get(array $options): PaginatedList
     {
-        $query = Collection::query();
+        $query = Collection::query()->orderByDesc('id');
 
         if (isset($options['search'])) {
             // Search by collection name

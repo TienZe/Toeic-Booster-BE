@@ -299,7 +299,7 @@ class FunctionCallingService
     {
         return new FunctionDeclaration(
             name: 'createWordFolder',
-            description: 'Creates a new word folder for the logged-in user. A word folder is a personal collection where users can save and organize their vocabulary words. This function should be called when the user expresses intent to create a new folder. For example, if the user says "Tạo thư mục từ vựng mới", "Tôi muốn tạo một thư mục để lưu từ vựng", or "Tạo thư mục tên là ABC".',
+            description: 'Creates a new word folder for the user. A word folder is a personal collection where users can save and organize their vocabulary words. This function should be called when the user expresses intent to create a new folder. For example, if the user says "Tạo thư mục từ vựng mới", "Tôi muốn tạo một thư mục để lưu từ vựng", or "Tạo thư mục tên là ABC".',
             parameters: new Schema(
                 type: DataType::OBJECT,
                 properties: [

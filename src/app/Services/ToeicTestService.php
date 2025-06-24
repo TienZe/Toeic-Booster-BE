@@ -133,7 +133,7 @@ class ToeicTestService
         $limit = $options['limit'] ?? 10;
         $page = $options['page'] ?? 0;
 
-        $query = ToeicTest::query();
+        $query = ToeicTest::query()->orderByDesc('id');
 
         if (isset($options['search'])) {
             $query->where('name', 'like', '%' . $options['search'] . '%');

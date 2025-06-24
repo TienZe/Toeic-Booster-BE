@@ -4,7 +4,6 @@ namespace App\Repositories;
 
 use App\Entities\PaginatedList;
 use App\Models\Vocabulary;
-use Illuminate\Database\Eloquent\Collection;
 
 class VocabularyRepository
 {
@@ -15,7 +14,7 @@ class VocabularyRepository
 
     public function get(array $options): PaginatedList
     {
-        $query = Vocabulary::query();
+        $query = Vocabulary::query()->orderByDesc('id');
 
         if (isset($options['search'])) {
             $searchKey = $options['search'];
